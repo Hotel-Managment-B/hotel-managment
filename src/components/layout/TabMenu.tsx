@@ -26,7 +26,7 @@ const TabMenu = () => {
   ];
 
   return (
-    <div className="fixed top-0 left-0 sm:w-4 md:w-full bg-blue-600 shadow-md z-50 rounded-lg mt-2">
+    <div className="fixed top-0 left-0 sm:w-4 md:w-full bg-blue-600 shadow-md z-50 rounded-lg">
       <div className="flex justify-between items-center h-12 px-4 sm:px-0 sm:justify-around">
         <button
           className="sm:hidden text-white text-2xl focus:outline-none"
