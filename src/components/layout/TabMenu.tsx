@@ -2,8 +2,16 @@
 
 import React, { useState } from "react";
 import { FaBars } from "react-icons/fa";
+import { usePathname } from "next/navigation";
 
 const TabMenu = () => {
+  const pathname = usePathname();
+
+  // Ensure TabMenu renders on all routes except /login
+  if (pathname === "/login") {
+    return null;
+  }
+
   const [activeTab, setActiveTab] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
