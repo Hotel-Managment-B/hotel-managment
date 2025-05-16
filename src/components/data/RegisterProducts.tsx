@@ -5,7 +5,7 @@ import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
-const RegisterProducts = () => {
+const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) => {
   const [formData, setFormData] = useState({
     code: "",
     productName: "",
@@ -95,6 +95,8 @@ const RegisterProducts = () => {
         unitSaleValue: "",
         date: "",
       });
+
+      onProductAdded();
     } catch (error) {
       console.error("Error al registrar el producto:", error);
       setErrorMessage("Error al registrar el producto.");
