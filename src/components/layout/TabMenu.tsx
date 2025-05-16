@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { usePathname, useRouter } from "next/navigation";
 
 const TabMenu = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Ensure TabMenu renders on all routes except /login
   if (pathname === "/login") {
@@ -15,11 +16,28 @@ const TabMenu = () => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProductsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const tabs = [
-    { name: "Inicio", route: "dashboard" },
+    { name: "Inicio", route: "#" },
     { name: "Productos", route: "product-list" },
-    { name: "Inventario", route: "product-list" },
+    { name: "Inventario", route: "#" },
     { name: "Ventas", route: "#" },
     { name: "Reportes", route: "#" },
     { name: "Configuración", route: "#" },
@@ -28,7 +46,11 @@ const TabMenu = () => {
 
   const handleTabClick = (index: number, route: string) => {
     setActiveTab(index);
-    router.push(route);
+    if (route === "product-list") {
+      setIsProductsDropdownOpen(!isProductsDropdownOpen);
+    } else {
+      router.push(route);
+    }
   };
 
   return (
@@ -42,20 +64,38 @@ const TabMenu = () => {
         </button>
         <div className="hidden sm:flex justify-around items-center w-full">
           {tabs.map((tab, index) => (
-            <button
+            <div
               key={index}
-              onClick={() => {
-                setActiveTab(index);
-                router.push(tab.route);
-              }}
-              className={`relative px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md ${
-                activeTab === index
-                  ? "bg-blue-800 border-t-4 border-l-4 border-r-4 border-blue-800"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className="relative"
+              ref={tab.route === "product-list" ? dropdownRef : null}
             >
-              {tab.name}
-            </button>
+              <button
+                onClick={() => handleTabClick(index, tab.route)}
+                className={`relative px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md ${
+                  activeTab === index
+                    ? "bg-blue-800 border-t-4 border-l-4 border-r-4 border-blue-800"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {tab.name}
+              </button>
+              {tab.route === "product-list" && isProductsDropdownOpen && (
+                <div className="absolute top-full left-0 bg-blue-700 text-white rounded-md shadow-md mt-1 w-64">
+                  <button
+                    onClick={() => router.push("/products-mb")}
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-600"
+                  >
+                    Registrar productos en el mini bar
+                  </button>
+                  <button
+                    onClick={() => alert("Función no implementada aún.")}
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-600"
+                  >
+                    Registrar productos de aseo
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
