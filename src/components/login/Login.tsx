@@ -2,24 +2,43 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/Index";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      alert("Por favor, completa todos los campos.");
+      setErrorMessage("Por favor, completa todos los campos.");
+      return;
+    }
+    if (!email.includes("@") || email.length < 5) {
+      setErrorMessage("Por favor, ingresa un correo electrónico válido.");
+      return;
+    }
+    if (password.length < 6) {
+      setErrorMessage("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
     try {
+      console.log("Intentando iniciar sesión con:", { email, password });
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("Usuario autenticado:", userCredential.user);
-      alert("Inicio de sesión exitoso");
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error);
-      alert("Error al iniciar sesión. Verifica tus credenciales.");
+      router.push("/dashboard"); // Redirect to Dashboard
+    } catch (error: any) {
+      if (error.code === "auth/invalid-credential") {
+        setErrorMessage("Credenciales inválidas. Por favor, verifica tu correo y contraseña.");
+      } else if (error.code === "auth/wrong-password") {
+        setErrorMessage("Contraseña incorrecta. Inténtalo de nuevo.");
+      } else if (error.code === "auth/user-not-found") {
+        setErrorMessage("Usuario no encontrado. Por favor, verifica tu correo.");
+      } else {
+        setErrorMessage("Ocurrió un error inesperado. Inténtalo de nuevo más tarde.");
+      }
     }
   };
 
@@ -57,6 +76,9 @@ const Login = () => {
               required
             />
           </div>
+          {errorMessage && (
+            <p className="mt-2 text-sm text-red-600">{errorMessage}</p>
+          )}
           <button
             type="submit"
             className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
