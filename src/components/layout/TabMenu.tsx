@@ -80,7 +80,7 @@ const TabMenu = () => {
                 {tab.name}
               </button>
               {tab.route === "product-list" && isProductsDropdownOpen && (
-                <div className="absolute top-full left-0 bg-blue-700 text-white rounded-md shadow-md mt-1 w-64">
+                <div className="absolute top-full left-0 bg-blue-700 text-white rounded-md shadow-md mt-1 w-72">
                   <button
                     onClick={() => router.push("/products-mb")}
                     className="block w-full text-left px-4 py-2 hover:bg-blue-600"
