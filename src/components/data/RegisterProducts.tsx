@@ -13,6 +13,7 @@ const RegisterProducts = () => {
     quantity: "",
     unitPurchaseValue: "",
     unitSaleValue: "",
+    date: "",
   });
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -59,9 +60,9 @@ const RegisterProducts = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue } = formData;
+    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue, date } = formData;
 
-    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue) {
+    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue || !date) {
       setErrorMessage("Por favor, completa todos los campos.");
       return;
     }
@@ -80,6 +81,7 @@ const RegisterProducts = () => {
         quantity: parseInt(quantity),
         unitPurchaseValue: parseFloat(unitPurchaseValue.replace(/[^0-9]/g, "")),
         unitSaleValue: parseFloat(unitSaleValue.replace(/[^0-9]/g, "")),
+        date,
       });
 
       setSuccessMessage("Producto registrado exitosamente");
@@ -91,6 +93,7 @@ const RegisterProducts = () => {
         quantity: "",
         unitPurchaseValue: "",
         unitSaleValue: "",
+        date: "",
       });
     } catch (error) {
       console.error("Error al registrar el producto:", error);
@@ -104,6 +107,20 @@ const RegisterProducts = () => {
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md border-2 border-blue-300">
         <h2 className="text-2xl font-bold text-center text-blue-900">Registrar Producto</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="date" className="block text-sm font-bold text-blue-900">
+              Fecha
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={formData.date || ""}
+              onChange={handleChange}
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+              required
+            />
+          </div>
           <div>
             <label htmlFor="code" className="block text-sm font-bold text-blue-900">
               Código
