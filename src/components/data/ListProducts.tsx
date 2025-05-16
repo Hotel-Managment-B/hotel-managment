@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import RegisterProducts from "./RegisterProducts";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 interface Product {
   id: string;
@@ -48,6 +49,20 @@ const ListProducts = () => {
     closeModal();
   };
 
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm("¿Seguro que desea eliminar este registro?");
+    if (confirmDelete) {
+      try {
+        await deleteDoc(doc(db, "products", id));
+        setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
+        alert("Registro eliminado exitosamente.");
+      } catch (error) {
+        console.error("Error eliminando el registro: ", error);
+        alert("Ocurrió un error al eliminar el registro.");
+      }
+    }
+  };
+
   const filteredProducts = products.filter(
     (product) =>
       product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,6 +104,7 @@ const ListProducts = () => {
                   <th className="border border-blue-400 px-4 py-2">Valor Total</th>
                   <th className="border border-blue-400 px-4 py-2">Valor Unitario de Compra</th>
                   <th className="border border-blue-400 px-4 py-2">Valor Unitario de Venta</th>
+                  <th className="border border-blue-400 px-4 py-2">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,6 +128,20 @@ const ListProducts = () => {
                     </td>
                     <td className="border border-blue-400 px-4 py-2">
                       ${product.unitSaleValue?.toLocaleString("es-ES")}
+                    </td>
+                    <td className="border border-blue-400 px-4 py-2 flex justify-center gap-2">
+                      <button
+                        className="text-blue-600 hover:text-blue-800"
+                        onClick={() => alert("Función de actualizar no implementada aún.")}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        <FaTrash />
+                      </button>
                     </td>
                   </tr>
                 ))}
