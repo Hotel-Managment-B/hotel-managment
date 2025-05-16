@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <TabMenu />
-        <div className="pt-12">{children}</div>
+        <div >{children}</div>
       </body>
     </html>
   );
