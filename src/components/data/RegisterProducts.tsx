@@ -1,6 +1,7 @@
 "use client";
+
 import React, { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
@@ -12,87 +13,77 @@ const RegisterProducts = () => {
     quantity: "",
     unitPurchaseValue: "",
     unitSaleValue: "",
-    profitMargin: "",
   });
 
-  // Función auxiliar para extraer valor numérico de un formato de moneda
-  const extractNumericValue = (formattedValue: string): number => {
-    if (!formattedValue) return 0;
-    // Eliminar cualquier caracter que no sea número o punto decimal
-    return parseFloat(formattedValue.replace(/[^0-9.]/g, ""));
-  };
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let formattedValue = value;
-    
+
     if (name === "totalValue" || name === "unitPurchaseValue" || name === "unitSaleValue") {
       formattedValue = formatCurrency(value);
     }
-    
+
     setFormData((prevFormData) => {
       const updatedFormData = { ...prevFormData, [name]: formattedValue };
-      
-      // Calcular valor unitario de compra si cambia valor total o cantidad
+
+      // Trigger calculation for unit purchase value if totalValue or quantity changes
       if (name === "totalValue" || name === "quantity") {
-        // Extraer valores numéricos
-        const totalValue = extractNumericValue(updatedFormData.totalValue);
-        const quantity = parseFloat(updatedFormData.quantity);
-        
+        const totalValue = parseFloat(updatedFormData.totalValue.replace(/[^0-9]/g, ""));
+        const quantity = parseFloat(updatedFormData.quantity.replace(/[^0-9]/g, ""));
+
         if (!isNaN(totalValue) && !isNaN(quantity) && quantity > 0) {
-          // Realizar la división directamente y aplicar formato
-          const unitValue = totalValue / quantity;
-          
-          // Para depuración
-          console.log("Valor total:", totalValue);
-          console.log("Cantidad:", quantity);
-          console.log("Valor unitario calculado:", unitValue);
-          
-          // Formatear manualmente para asegurar precisión
+          const unitValue = Math.floor(totalValue / quantity); // Correct division without decimals
           updatedFormData.unitPurchaseValue = formatCurrency(unitValue.toString());
         } else {
-          updatedFormData.unitPurchaseValue = "$0,00";
+          updatedFormData.unitPurchaseValue = "$0"; // Default value if invalid
         }
       }
-      
-      // Calcular margen de ganancia si cambian valores unitarios
-      if (name === "unitPurchaseValue" || name === "unitSaleValue") {
-        const unitPurchaseValue = extractNumericValue(updatedFormData.unitPurchaseValue);
-        const unitSaleValue = extractNumericValue(updatedFormData.unitSaleValue);
-        
-        if (!isNaN(unitPurchaseValue) && !isNaN(unitSaleValue) && unitPurchaseValue > 0) {
-          const profitMargin = ((unitSaleValue - unitPurchaseValue) / unitPurchaseValue) * 100;
-          updatedFormData.profitMargin = `${profitMargin.toFixed(2)}%`;
-        } else {
-          updatedFormData.profitMargin = "0,00%";
-        }
-      }
-      
+
       return updatedFormData;
     });
   };
 
+  const checkIfCodeExists = async (code: string): Promise<boolean> => {
+    try {
+      const q = query(collection(db, "products"), where("code", "==", code));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty; // Retorna true si el código ya existe
+    } catch (error) {
+      console.error("Error al verificar el código del producto:", error);
+      return false; // En caso de error, asumimos que no existe
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue, profitMargin } = formData;
-    
-    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue || !profitMargin) {
-      alert("Por favor, completa todos los campos.");
+    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue } = formData;
+
+    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue) {
+      setErrorMessage("Por favor, completa todos los campos.");
       return;
     }
-    
+
     try {
+      const codeExists = await checkIfCodeExists(code);
+      if (codeExists) {
+        setErrorMessage("El código ya está registrado. Por favor, utiliza un código diferente.");
+        return;
+      }
+
       await addDoc(collection(db, "products"), {
         code,
         productName,
-        totalValue: extractNumericValue(totalValue),
+        totalValue: parseFloat(totalValue.replace(/[^0-9]/g, "")),
         quantity: parseInt(quantity),
-        unitPurchaseValue: extractNumericValue(unitPurchaseValue),
-        unitSaleValue: extractNumericValue(unitSaleValue),
-        profitMargin: parseFloat(profitMargin.replace("%", "")),
+        unitPurchaseValue: parseFloat(unitPurchaseValue.replace(/[^0-9]/g, "")),
+        unitSaleValue: parseFloat(unitSaleValue.replace(/[^0-9]/g, "")),
       });
-      
-      alert("Producto registrado exitosamente");
+
+      setSuccessMessage("Producto registrado exitosamente");
+      setErrorMessage("");
       setFormData({
         code: "",
         productName: "",
@@ -100,11 +91,11 @@ const RegisterProducts = () => {
         quantity: "",
         unitPurchaseValue: "",
         unitSaleValue: "",
-        profitMargin: "",
       });
     } catch (error) {
       console.error("Error al registrar el producto:", error);
-      alert("Error al registrar el producto.");
+      setErrorMessage("Error al registrar el producto.");
+      setSuccessMessage("");
     }
   };
 
@@ -145,7 +136,7 @@ const RegisterProducts = () => {
           </div>
           <div>
             <label htmlFor="totalValue" className="block text-sm font-bold text-blue-900">
-              Valor Total
+              Valor Total de la Compra
             </label>
             <input
               type="text"
@@ -184,7 +175,7 @@ const RegisterProducts = () => {
               value={formData.unitPurchaseValue}
               onChange={handleChange}
               className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa el valor unitario de compra"
+              placeholder="Valor unitario de compra"
               required
             />
           </div>
@@ -202,21 +193,12 @@ const RegisterProducts = () => {
               placeholder="Ingresa el valor unitario de venta"
               required
             />
-          </div>
-          <div>
-            <label htmlFor="profitMargin" className="block text-sm font-bold text-blue-900">
-              Margen de Ganancia
-            </label>
-            <input
-              type="text"
-              id="profitMargin"
-              name="profitMargin"
-              value={formData.profitMargin}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa el margen de ganancia"
-              required
-            />
+            {errorMessage && (
+              <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
+            )}
+            {successMessage && (
+              <p className="mt-1 text-sm text-blue-700">{successMessage}</p>
+            )}
           </div>
           <button
             type="submit"
