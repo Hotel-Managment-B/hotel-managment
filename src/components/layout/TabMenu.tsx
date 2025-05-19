@@ -20,11 +20,19 @@ const TabMenu = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        target &&
+        !dropdownRef.current.contains(target) &&
+        !target.closest(".dropdown-item") // Asegura que no cierre si el clic es en un elemento del dropdown
       ) {
         setIsProductsDropdownOpen(false);
+      }
+
+      // Cierra el menú en dispositivos sm si se hace clic fuera
+      if (isMenuOpen && target && !dropdownRef.current?.contains(target)) {
+        setIsMenuOpen(false);
       }
     };
 
@@ -32,7 +40,7 @@ const TabMenu = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [isMenuOpen]);
 
   const tabs = [
     { name: "Inicio", route: "dashboard" },
@@ -80,16 +88,20 @@ const TabMenu = () => {
                 {tab.name}
               </button>
               {tab.route === "product-list" && isProductsDropdownOpen && (
-                <div className="absolute top-full left-0 bg-blue-700 text-white rounded-md shadow-md mt-1 w-72">
+                <div
+                  className={`absolute bg-blue-700 text-white rounded-md shadow-md mt-1 w-72 ${
+                    isMenuOpen ? "left-16 top-0 fixed sm:hidden" : "top-full left-0"
+                  }`}
+                >
                   <button
                     onClick={() => router.push("/products-mb")}
-                    className="block w-full text-left px-4 py-2 hover:bg-blue-600"
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-600 dropdown-item"
                   >
                     Registrar productos en el mini bar
                   </button>
                   <button
                     onClick={() => router.push("/toiletries")}
-                    className="block w-full text-left px-4 py-2 hover:bg-blue-600"
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-600 dropdown-item"
                   >
                     Productos de aseo
                   </button>
@@ -99,25 +111,44 @@ const TabMenu = () => {
           ))}
         </div>
       </div>
-      {isMenuOpen && (
-        <div className="sm:hidden bg-blue-700 text-white">
+      <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-blue-700 text-white`}> {/* Ajuste para manejar el menú en sm */}
           {tabs.map((tab, index) => (
-            <button
+            <div
               key={index}
-              onClick={() => {
-                setActiveTab(index);
-                setIsMenuOpen(false);
-                router.push(tab.route);
-              }}
-              className={`block w-full text-left px-4 py-2 font-semibold transition-colors duration-200 ${
-                activeTab === index ? "bg-blue-800" : "hover:bg-blue-600"
-              }`}
+              className="relative"
+              ref={tab.route === "product-list" ? dropdownRef : null}
             >
-              {tab.name}
-            </button>
+              <button
+                onClick={() => handleTabClick(index, tab.route)}
+                className={`block w-full text-left px-4 py-2 font-semibold transition-colors duration-200 ${
+                  activeTab === index ? "bg-blue-800" : "hover:bg-blue-600"
+                }`}
+              >
+                {tab.name}
+              </button>
+              {tab.route === "product-list" && isProductsDropdownOpen && (
+                <div
+                  className={`absolute bg-blue-700 text-white rounded-md shadow-md mt-1 w-72 ${
+                    isMenuOpen ? "left-16 top-0 fixed sm:hidden" : "top-full left-0"
+                  }`}
+                >
+                  <button
+                    onClick={() => router.push("/products-mb")}
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-600 dropdown-item"
+                  >
+                    Registrar productos en el mini bar
+                  </button>
+                  <button
+                    onClick={() => router.push("/toiletries")}
+                    className="block w-full text-left px-4 py-2 hover:bg-blue-600 dropdown-item"
+                  >
+                    Productos de aseo
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
-      )}
     </div>
   );
 };
