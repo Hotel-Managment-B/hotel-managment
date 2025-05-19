@@ -105,7 +105,7 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-100">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md border-2 border-blue-300">
         <h2 className="text-2xl font-bold text-center text-blue-900">Registrar Producto</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
