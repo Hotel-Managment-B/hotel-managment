@@ -71,7 +71,7 @@ const ListProducts = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen mt-12 px-4">
-      <h2 className="text-3xl font-bold text-center text-blue-900 mb-6">Inventario</h2>
+      <h2 className="text-3xl font-bold text-center text-blue-900 mb-6">Productos del Mini Bar</h2>
       {isLoading ? (
         <p className="text-blue-700 text-lg">Cargando inventario...</p>
       ) : products.length === 0 ? (
