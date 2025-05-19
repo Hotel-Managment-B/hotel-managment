@@ -35,7 +35,7 @@ const TabMenu = () => {
   }, []);
 
   const tabs = [
-    { name: "Inicio", route: "#" },
+    { name: "Inicio", route: "dashboard" },
     { name: "Productos", route: "product-list" },
     { name: "Inventario", route: "#" },
     { name: "Ventas", route: "#" },
