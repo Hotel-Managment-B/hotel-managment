@@ -37,7 +37,7 @@ const TabMenu = () => {
   const tabs = [
     { name: "Inicio", route: "dashboard" },
     { name: "Productos", route: "product-list" },
-    { name: "Inventario", route: "#" },
+    { name: "Inventario", route: "/product-list" },
     { name: "Ventas", route: "#" },
     { name: "Reportes", route: "#" },
     { name: "Configuración", route: "#" },
@@ -88,10 +88,10 @@ const TabMenu = () => {
                     Registrar productos en el mini bar
                   </button>
                   <button
-                    onClick={() => alert("Función no implementada aún.")}
+                    onClick={() => router.push("/toiletries")}
                     className="block w-full text-left px-4 py-2 hover:bg-blue-600"
                   >
-                    Registrar productos de aseo
+                    Productos de aseo
                   </button>
                 </div>
               )}
