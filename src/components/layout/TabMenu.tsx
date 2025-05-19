@@ -9,11 +9,6 @@ const TabMenu = () => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Ensure TabMenu renders on all routes except /login
-  if (pathname === "/login") {
-    return null;
-  }
-
   const [activeTab, setActiveTab] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
@@ -60,6 +55,10 @@ const TabMenu = () => {
       router.push(route);
     }
   };
+
+  if (pathname === "/login") {
+    return null; // Mueve la lógica de renderizado condicional después de los hooks
+  }
 
   return (
     <div className="fixed top-0 left-0 sm:w-4 md:w-full bg-blue-600 shadow-md z-50 rounded-lg">
