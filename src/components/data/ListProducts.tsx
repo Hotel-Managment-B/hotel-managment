@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import RegisterProducts from "./RegisterProducts";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -22,6 +22,7 @@ const ListProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -60,6 +61,42 @@ const ListProducts = () => {
         console.error("Error eliminando el registro: ", error);
         alert("Ocurrió un error al eliminar el registro.");
       }
+    }
+  };
+
+  const handleEdit = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const checkIfCodeExists = async (code: string, currentId: string) => {
+    const querySnapshot = await getDocs(collection(db, "products"));
+    return querySnapshot.docs.some(
+      (doc) => doc.id !== currentId && (doc.data() as Product).code === code
+    );
+  };
+
+  const handleProductUpdate = async (updatedData: Product) => {
+    try {
+      if (updatedData.id) {
+        const productRef = doc(db, "products", updatedData.id);
+        await updateDoc(productRef, {
+          productName: updatedData.productName,
+          totalValue: updatedData.totalValue,
+          quantity: updatedData.quantity,
+          unitPurchaseValue: updatedData.unitPurchaseValue,
+          unitSaleValue: updatedData.unitSaleValue,
+          date: updatedData.date,
+        });
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === updatedData.id ? updatedData : product
+          )
+        );
+        closeModal();
+      }
+    } catch (error) {
+      console.error("Error al actualizar el producto:", error);
     }
   };
 
@@ -131,7 +168,7 @@ const ListProducts = () => {
                     <td className="border border-blue-400 px-4 py-2 flex justify-center gap-2">
                       <button
                         className="text-blue-600 hover:text-blue-800"
-                        onClick={() => alert("Función de actualizar no implementada aún.")}
+                        onClick={() => handleEdit(product)}
                       >
                         <FaEdit />
                       </button>
@@ -155,11 +192,17 @@ const ListProducts = () => {
           <div className="bg-blue-100 p-6 rounded-md shadow-md w-full max-w-lg relative">
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 h-6 w-6 mt-4 text-2xl"
+              className="mt-4 mb-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
-              &times;
+              Cerrar
             </button>
-            <RegisterProducts onProductAdded={handleProductAdded} />
+            <RegisterProducts
+              onProductAdded={handleProductAdded}
+              onProductUpdated={handleProductUpdate} // Pasar la función de actualización
+              initialData={selectedProduct} // Pasar datos del producto seleccionado
+              title={selectedProduct ? "Actualizar Producto Mini Bar" : "Registrar Producto en el Mini Bar"}
+              buttonText={selectedProduct ? "Actualizar Producto" : "Registrar Producto"}
+            />
           </div>
         </div>
       )}
