@@ -5,16 +5,34 @@ import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
-const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) => {
+interface RegisterProductsProps {
+  onProductAdded: () => void;
+  onProductUpdated?: (updatedData: Product) => void;
+  initialData?: Product | null;
+  title?: string;
+  buttonText?: string;
+}
+
+export interface Product {
+  id: string;
+  date?: string;
+  code: string;
+  productName: string;
+  quantity: number;
+  totalValue: number;
+  unitPurchaseValue: number;
+  unitSaleValue: number;
+}
+
+const RegisterProducts: React.FC<RegisterProductsProps> = ({ onProductAdded, onProductUpdated, initialData, title, buttonText }) => {
   const [formData, setFormData] = useState({
-    code: "",
-    productName: "",
-    totalValue: "",
-    quantity: "",
-    unitPurchaseValue: "",
-    unitSaleValue: "",
-    date: "",
-    bankAccount: "",
+    code: initialData?.code || "",
+    productName: initialData?.productName || "",
+    totalValue: initialData?.totalValue?.toString() || "",
+    quantity: initialData?.quantity?.toString() || "",
+    unitPurchaseValue: initialData?.unitPurchaseValue?.toString() || "",
+    unitSaleValue: initialData?.unitSaleValue?.toString() || "",
+    date: initialData?.date || "",
   });
 
   const [bankAccounts, setBankAccounts] = useState<string[]>([]);
@@ -37,6 +55,20 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
 
     fetchBankAccounts();
   }, []);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        code: initialData.code || "",
+        productName: initialData.productName || "",
+        totalValue: formatCurrency(initialData.totalValue || ""),
+        quantity: initialData.quantity?.toString() || "",
+        unitPurchaseValue: formatCurrency(initialData.unitPurchaseValue || ""),
+        unitSaleValue: formatCurrency(initialData.unitSaleValue || ""),
+        date: initialData.date || "",
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -66,11 +98,21 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
     });
   };
 
-  const checkIfCodeExists = async (code: string): Promise<boolean> => {
+  const checkIfCodeExists = async (code: string, currentId?: string): Promise<boolean> => {
     try {
       const q = query(collection(db, "products"), where("code", "==", code));
       const querySnapshot = await getDocs(q);
-      return !querySnapshot.empty; // Retorna true si el código ya existe
+
+      // Si el código existe pero pertenece al producto actual, no hay conflicto
+      if (!querySnapshot.empty) {
+        const existingProduct = querySnapshot.docs[0];
+        if (existingProduct.id === currentId) {
+          return false; // No hay conflicto
+        }
+        return true; // El código ya está en uso por otro producto
+      }
+
+      return false; // El código no existe
     } catch (error) {
       console.error("Error al verificar el código del producto:", error);
       return false; // En caso de error, asumimos que no existe
@@ -79,48 +121,62 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue, date, bankAccount } = formData;
+    const { productName, totalValue, quantity, unitPurchaseValue, unitSaleValue, date } = formData;
 
-    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue || !date || !bankAccount) {
+    if (!productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue || !date) {
       setErrorMessage("Por favor, completa todos los campos.");
       return;
     }
 
     try {
-      const codeExists = await checkIfCodeExists(code);
-      if (codeExists) {
-        setErrorMessage("El código ya está registrado. Por favor, utiliza un código diferente.");
-        return;
+      if (initialData) {
+        // Actualizar producto existente sin modificar el código
+        if (onProductUpdated) {
+          onProductUpdated({
+            ...initialData,
+            productName,
+            totalValue: parseFloat(totalValue.replace(/[^0-9]/g, "")),
+            quantity: parseInt(quantity),
+            unitPurchaseValue: parseFloat(unitPurchaseValue.replace(/[^0-9]/g, "")),
+            unitSaleValue: parseFloat(unitSaleValue.replace(/[^0-9]/g, "")),
+            date,
+          });
+        }
+      } else {
+        // Registrar nuevo producto
+        const codeExists = await checkIfCodeExists(formData.code);
+        if (codeExists) {
+          setErrorMessage("El código ya está registrado. Por favor, utiliza un código diferente.");
+          return;
+        }
+
+        await addDoc(collection(db, "products"), {
+          code: formData.code,
+          productName,
+          totalValue: parseFloat(totalValue.replace(/[^0-9]/g, "")),
+          quantity: parseInt(quantity),
+          unitPurchaseValue: parseFloat(unitPurchaseValue.replace(/[^0-9]/g, "")),
+          unitSaleValue: parseFloat(unitSaleValue.replace(/[^0-9]/g, "")),
+          date,
+        });
+
+        setSuccessMessage("Producto registrado exitosamente");
+        setErrorMessage("");
+        setFormData({
+          code: "",
+          productName: "",
+          totalValue: "",
+          quantity: "",
+          unitPurchaseValue: "",
+          unitSaleValue: "",
+          date: "",
+        });
+
+        onProductAdded();
       }
-
-      await addDoc(collection(db, "products"), {
-        code,
-        productName,
-        totalValue: parseFloat(totalValue.replace(/[^0-9]/g, "")),
-        quantity: parseInt(quantity),
-        unitPurchaseValue: parseFloat(unitPurchaseValue.replace(/[^0-9]/g, "")),
-        unitSaleValue: parseFloat(unitSaleValue.replace(/[^0-9]/g, "")),
-        date,
-        bankAccount,
-      });
-
-      setSuccessMessage("Producto registrado exitosamente");
-      setErrorMessage("");
-      setFormData({
-        code: "",
-        productName: "",
-        totalValue: "",
-        quantity: "",
-        unitPurchaseValue: "",
-        unitSaleValue: "",
-        date: "",
-        bankAccount: "",
-      });
-
-      onProductAdded();
     } catch (error) {
-      console.error("Error al registrar el producto:", error);
-      setErrorMessage("Error al registrar el producto.");
+      console.error("Error al registrar o actualizar el producto:", error);
+      setErrorMessage("Error al registrar o actualizar el producto.");
       setSuccessMessage("");
     }
   };
@@ -128,7 +184,7 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
   return (
     <div className="flex flex-col items-center justify-center ">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md border-2 border-blue-300">
-        <h2 className=" sm:text-4xl md:text-2xl font-bold text-center text-blue-900">Registrar Producto del Mini Bar</h2>
+        <h2 className=" sm:text-4xl md:text-2xl font-bold text-center text-blue-900">{title || "Registrar Producto del Mini Bar"}</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="date" className="block text-sm font-bold text-blue-900">
@@ -157,6 +213,7 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
               className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
               placeholder="Ingresa el código"
               required
+              disabled={!!initialData} // Deshabilitar si hay datos iniciales
             />
           </div>
           <div>
@@ -234,26 +291,6 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
               required
             />
           </div>
-          <div>
-            <label htmlFor="bankAccount" className="block text-sm font-bold text-blue-900">
-              Cuenta Bancaria
-            </label>
-            <select
-              id="bankAccount"
-              name="bankAccount"
-              value={formData.bankAccount}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            >
-              <option value="">Selecciona una cuenta bancaria</option>
-              {bankAccounts.map((account, index) => (
-                <option key={index} value={account}>
-                  {account}
-                </option>
-              ))}
-            </select>
-          </div>
           {errorMessage && (
             <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
           )}
@@ -264,7 +301,7 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
             type="submit"
             className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Registrar Producto
+            {buttonText || "Registrar Producto"}
           </button>
         </form>
       </div>
