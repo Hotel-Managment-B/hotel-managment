@@ -70,7 +70,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-900">Dashboard</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-900 mt-12">Dashboard</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-green-100 p-3 sm:p-4 rounded-lg shadow-md text-center">
           <h2 className="text-lg sm:text-xl font-bold text-green-900">Ventas</h2>

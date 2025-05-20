@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
@@ -14,12 +14,31 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
     unitPurchaseValue: "",
     unitSaleValue: "",
     date: "",
+    bankAccount: "",
   });
 
+  const [bankAccounts, setBankAccounts] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const fetchBankAccounts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "bankAccount"));
+        const accounts = querySnapshot.docs.map((doc) => {
+          console.log("Cuenta bancaria obtenida:", doc.data()); // Log para depurar los datos
+          return doc.data().accountName; // Cambié 'name' por 'accountName'
+        });
+        setBankAccounts(accounts);
+      } catch (error) {
+        console.error("Error al obtener las cuentas bancarias:", error);
+      }
+    };
+
+    fetchBankAccounts();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     let formattedValue = value;
 
@@ -60,9 +79,9 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue, date } = formData;
+    const { code, productName, totalValue, quantity, unitPurchaseValue, unitSaleValue, date, bankAccount } = formData;
 
-    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue || !date) {
+    if (!code || !productName || !totalValue || !quantity || !unitPurchaseValue || !unitSaleValue || !date || !bankAccount) {
       setErrorMessage("Por favor, completa todos los campos.");
       return;
     }
@@ -82,6 +101,7 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
         unitPurchaseValue: parseFloat(unitPurchaseValue.replace(/[^0-9]/g, "")),
         unitSaleValue: parseFloat(unitSaleValue.replace(/[^0-9]/g, "")),
         date,
+        bankAccount,
       });
 
       setSuccessMessage("Producto registrado exitosamente");
@@ -94,6 +114,7 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
         unitPurchaseValue: "",
         unitSaleValue: "",
         date: "",
+        bankAccount: "",
       });
 
       onProductAdded();
@@ -105,9 +126,9 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center ">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md border-2 border-blue-300">
-        <h2 className="text-2xl font-bold text-center text-blue-900">Registrar Producto</h2>
+        <h2 className=" sm:text-4xl md:text-2xl font-bold text-center text-blue-900">Registrar Producto del Mini Bar</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="date" className="block text-sm font-bold text-blue-900">
@@ -212,13 +233,33 @@ const RegisterProducts = ({ onProductAdded }: { onProductAdded: () => void }) =>
               placeholder="Ingresa el valor unitario de venta"
               required
             />
-            {errorMessage && (
-              <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
-            )}
-            {successMessage && (
-              <p className="mt-1 text-sm text-blue-700">{successMessage}</p>
-            )}
           </div>
+          <div>
+            <label htmlFor="bankAccount" className="block text-sm font-bold text-blue-900">
+              Cuenta Bancaria
+            </label>
+            <select
+              id="bankAccount"
+              name="bankAccount"
+              value={formData.bankAccount}
+              onChange={handleChange}
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+              required
+            >
+              <option value="">Selecciona una cuenta bancaria</option>
+              {bankAccounts.map((account, index) => (
+                <option key={index} value={account}>
+                  {account}
+                </option>
+              ))}
+            </select>
+          </div>
+          {errorMessage && (
+            <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
+          )}
+          {successMessage && (
+            <p className="mt-1 text-sm text-blue-700">{successMessage}</p>
+          )}
           <button
             type="submit"
             className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

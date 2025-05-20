@@ -67,7 +67,7 @@ const ListToiletries = () => {
   );
 
   return (
-    <div className="flex flex-col sm:flex-row items-start min-h-screen mt-12 px-4 gap-4">
+    <div className="flex flex-col sm:flex-row items-start min-h-screen mt-2 px-4 gap-4">
       <div className="sm:w-1/3 w-full">
         <RegisterToiletries onProductAdded={handleProductAdded} />
       </div>
