@@ -10,7 +10,7 @@ export default function ListProductsPage() {
   return (
     <div className="mt-16 px-4">
       {/* Header Flex Container */}
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         {/* Radio buttons a la izquierda */}
         <div className="flex gap-4 order-1 sm:order-none">
           <label className="flex items-center gap-1 text-blue-800 font-medium">
