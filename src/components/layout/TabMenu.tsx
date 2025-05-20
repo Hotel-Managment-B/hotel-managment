@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 const TabMenu = () => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("/dashboard");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,6 +23,14 @@ const TabMenu = () => {
     };
   }, []);
 
+  const getButtonClass = (path: string) => {
+    return `${
+      activeTab === path
+        ? "bg-blue-800 border-t-4 border-l-4 border-r-4 border-blue-800"
+        : "bg-blue-600 hover:bg-blue-700"
+    } w-full sm:w-auto px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md`;
+  };
+
   return (
     <div className="fixed top-0 left-0 w-full bg-blue-600 shadow-md z-50">
       <div className="flex justify-between items-center h-12 px-4">
@@ -35,45 +44,66 @@ const TabMenu = () => {
         <div className="hidden sm:flex justify-around items-center w-full">
           <div className="relative">
             <button
-              onClick={() => router.push("/dashboard")}
-              className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-800 border-t-4 border-l-4 border-r-4 border-blue-800"
+              onClick={() => {
+                setActiveTab("/dashboard");
+                router.push("/dashboard");
+              }}
+              className={getButtonClass("/dashboard")}
             >
               Inicio
             </button>
           </div>
           <div className="relative">
             <button
-              onClick={() => router.push("/products-mb")}
-              className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                setActiveTab("/products-mb");
+                router.push("/products-mb");
+              }}
+              className={getButtonClass("/products-mb")}
             >
               Productos
             </button>
           </div>
           <div className="relative">
             <button
-              onClick={() => router.push("/product-list")}
-              className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                setActiveTab("/product-list");
+                router.push("/product-list");
+              }}
+              className={getButtonClass("/product-list")}
             >
               Inventario
             </button>
           </div>
           <div className="relative">
-            <button className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-600 hover:bg-blue-700">
+            <button
+              onClick={() => setActiveTab("/ventas")}
+              className={getButtonClass("/ventas")}
+            >
               Ventas
             </button>
           </div>
           <div className="relative">
-            <button className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-600 hover:bg-blue-700">
+            <button
+              onClick={() => setActiveTab("/reportes")}
+              className={getButtonClass("/reportes")}
+            >
               Reportes
             </button>
           </div>
           <div className="relative">
-            <button className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-600 hover:bg-blue-700">
+            <button
+              onClick={() => setActiveTab("/configuracion")}
+              className={getButtonClass("/configuracion")}
+            >
               Configuración
             </button>
           </div>
           <div className="relative">
-            <button className="px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md bg-blue-600 hover:bg-blue-700">
+            <button
+              onClick={() => setActiveTab("/ayuda")}
+              className={getButtonClass("/ayuda")}
+            >
               Ayuda
             </button>
           </div>
@@ -86,64 +116,71 @@ const TabMenu = () => {
         >
           <button
             onClick={() => {
+              setActiveTab("/dashboard");
               setIsMenuOpen(false);
               router.push("/dashboard");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/dashboard")}
           >
             Inicio
           </button>
           <button
             onClick={() => {
+              setActiveTab("/products-mb");
               setIsMenuOpen(false);
               router.push("/products-mb");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/products-mb")}
           >
             Productos
           </button>
           <button
             onClick={() => {
+              setActiveTab("/product-list");
               setIsMenuOpen(false);
               router.push("/product-list");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/product-list")}
           >
             Inventario
           </button>
           <button
             onClick={() => {
+              setActiveTab("/ventas");
               setIsMenuOpen(false);
               router.push("/ventas");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/ventas")}
           >
             Ventas
           </button>
           <button
             onClick={() => {
+              setActiveTab("/reportes");
               setIsMenuOpen(false);
               router.push("/reportes");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/reportes")}
           >
             Reportes
           </button>
           <button
             onClick={() => {
+              setActiveTab("/configuracion");
               setIsMenuOpen(false);
               router.push("/configuracion");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/configuracion")}
           >
             Configuración
           </button>
           <button
             onClick={() => {
+              setActiveTab("/ayuda");
               setIsMenuOpen(false);
               router.push("/ayuda");
             }}
-            className="w-full text-left px-4 py-2 hover:bg-blue-600"
+            className={getButtonClass("/ayuda")}
           >
             Ayuda
           </button>
