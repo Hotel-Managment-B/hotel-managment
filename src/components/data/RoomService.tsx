@@ -49,7 +49,7 @@ const RoomService = () => {
         {rooms.map((room) => (
           <li key={room.id}>
             <div
-              onClick={() => router.push(`/room-status?roomNumber=${room.roomNumber}`)}
+              onClick={() => router.push(`/room-status?roomNumber=${room.roomNumber}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}`)}
               className="cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold rounded-lg shadow-md p-4 text-center transition duration-300"
             >
               Habitación {room.roomNumber}
