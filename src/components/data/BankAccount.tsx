@@ -49,8 +49,8 @@ const BankAccount = () => {
 
   return (
     <div className="flex flex-col items-center mt-4 sm:mt-12 px-4">
-      <h2 className="text-3xl font-bold text-center text-blue-900 mb-2">Registrar Cuenta</h2>
-      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-6 rounded-lg shadow-md border-2 border-blue-300 space-y-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-6 rounded-lg shadow-2xl border-2 border-blue-200 mt-4 space-y-4">
+              <h2 className="text-3xl font-bold text-center text-blue-900 mb-4">Registrar Cuenta</h2>
         <div>
           <label htmlFor="accountName" className="block text-sm font-bold text-blue-900">
             Nombre de la Cuenta

@@ -244,7 +244,7 @@ const RoomStatus = () => {
                     }
                   }}
                   list={`product-options-${index}`}
-                  className="border border-gray-300 rounded-md p-2 w-full"
+                  className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 w-full"
                 />
                 <datalist id={`product-options-${index}`}>
                   {products.map((product) => (
@@ -259,7 +259,7 @@ const RoomStatus = () => {
                 placeholder="Descripción"
                 value={row.description || ""}
                 readOnly
-                className="border border-gray-300 rounded-md p-2"
+                className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
               />
               <input
                 type="number"
@@ -274,7 +274,7 @@ const RoomStatus = () => {
                     handleRowChange(index, "subtotal", subtotal);
                   }
                 }}
-                className="border border-gray-300 rounded-md p-2"
+                className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
                 min="1"
               />
               <input
@@ -282,14 +282,14 @@ const RoomStatus = () => {
                 placeholder="Valor Unitario"
                 value={formatCurrency(row.unitPrice || 0)}
                 readOnly
-                className="border border-gray-300 rounded-md p-2"
+                className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
               />
               <input
                 type="text"
                 placeholder="Subtotal"
                 value={formatCurrency(row.subtotal || 0)}
                 readOnly
-                className="border border-gray-300 rounded-md p-2"
+                className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
               />
               <button
                 onClick={() => handleRemoveRow(index)}

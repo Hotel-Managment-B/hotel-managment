@@ -63,8 +63,8 @@ const AddRoom = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">Registrar Habitación</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

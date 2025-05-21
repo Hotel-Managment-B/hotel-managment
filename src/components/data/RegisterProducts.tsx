@@ -183,7 +183,7 @@ const RegisterProducts: React.FC<RegisterProductsProps> = ({ onProductAdded, onP
 
   return (
     <div className="flex flex-col items-center justify-center ">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md border-2 border-blue-300">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-2xl border-2 border-blue-200">
         <h2 className=" sm:text-4xl md:text-2xl font-bold text-center text-blue-900">{title || "Registrar Producto del Mini Bar"}</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
