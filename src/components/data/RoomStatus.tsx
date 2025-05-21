@@ -159,7 +159,7 @@ const RoomStatus = () => {
             </label>
           </div>
         </div>
-        <div className="flex items-center justify-center shadow-2xl border-2 border-blue-200 rounded-lg p-6">
+        <div className="flex items-center justify-center col-span-2 md:col-span-1 shadow-2xl border-2 border-blue-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-blue-800 mb-2 m-4">Total</h2>
           <p className="text-lg text-blue-800 font-bold mb-2 m-4">
             {calculateTotal()}
