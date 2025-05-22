@@ -50,7 +50,7 @@ const TabMenu = () => {
               }}
               className={getButtonClass("/dashboard")}
             >
-              Inicio
+              Dashboard
             </button>
           </div>
           <div className="relative">
@@ -61,7 +61,7 @@ const TabMenu = () => {
               }}
               className={getButtonClass("/products-mb")}
             >
-              Productos
+              Registrar
             </button>
           </div>
           <div className="relative">
@@ -77,10 +77,13 @@ const TabMenu = () => {
           </div>
           <div className="relative">
             <button
-              onClick={() => setActiveTab("/ventas")}
-              className={getButtonClass("/ventas")}
+              onClick={() => {
+                setActiveTab("/room-data");
+                router.push("/room-data");
+              }}
+              className={getButtonClass("/room-data")}
             >
-              Ventas
+              Habitaciones
             </button>
           </div>
           <div className="relative">
