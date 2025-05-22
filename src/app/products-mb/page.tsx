@@ -9,6 +9,9 @@ const RegisterProducts = dynamic(() => import("@/components/data/RegisterProduct
 const RegisterToiletries = dynamic(() => import("@/components/data/RegisterToiletries"), {
   ssr: false,
 });
+const AddRoom = dynamic(() => import("@/components/data/AddRoom"), {
+  ssr: false,
+});
 
 const ClientWrapper = () => {
   const [selectedOption, setSelectedOption] = useState("mini-bar");
@@ -41,13 +44,24 @@ const ClientWrapper = () => {
             />
             Registrar Productos de Aseo
           </label>
+          <label className="flex items-center gap-1 text-blue-800 font-medium">
+            <input
+              type="radio"
+              value="add-room"
+              checked={selectedOption === "add-room"}
+              onChange={() => setSelectedOption("add-room")}
+            />
+            Registrar Habitación
+          </label>
         </div>
       </div>
       {/* Mostrar componente según la opción seleccionada */}
       {selectedOption === "mini-bar" ? (
         <RegisterProducts onProductAdded={handleProductAdded} />
-      ) : (
+      ) : selectedOption === "toiletries" ? (
         <RegisterToiletries onProductAdded={handleProductAdded} />
+      ) : (
+        <AddRoom />
       )}
     </div>
   );
