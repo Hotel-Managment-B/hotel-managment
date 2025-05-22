@@ -12,10 +12,12 @@ interface Room {
   oneAndHalfHourRate: string;
   threeHourRate: string;
   overnightRate: string;
+  status: string;
 }
 
 const RoomService = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [activeRoom, setActiveRoom] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,6 +32,7 @@ const RoomService = () => {
             oneAndHalfHourRate: doc.data().oneAndHalfHourRate || "",
             threeHourRate: doc.data().threeHourRate || "",
             overnightRate: doc.data().overnightRate || "",
+            status: doc.data().status || "",
           }))
           .sort((a, b) => parseInt(a.roomNumber) - parseInt(b.roomNumber));
         setRooms(roomsData);
@@ -49,8 +52,18 @@ const RoomService = () => {
         {rooms.map((room) => (
           <li key={room.id}>
             <div
-              onClick={() => router.push(`/room-status?roomNumber=${room.roomNumber}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}`)}
-              className="cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold rounded-lg shadow-md p-4 text-center transition duration-300"
+              onClick={() => {
+                setActiveRoom(room.roomNumber); // Actualizar la habitación activa
+                console.log(`Navigating to: /room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}`);
+                router.push(`/room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}`);
+              }}
+              className={`cursor-pointer ${
+                activeRoom === room.roomNumber
+                  ? 'bg-blue-300'
+                  : room.status === 'ocupado'
+                  ? 'bg-green-200 text-green-900 hover:bg-green-400'
+                  : 'bg-blue-100'
+              } hover:bg-blue-300 text-blue-800 font-semibold rounded-lg shadow-md p-4 text-center transition duration-300`}
             >
               Habitación {room.roomNumber}
             </div>

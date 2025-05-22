@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
@@ -20,7 +20,8 @@ const RoomStatus = () => {
   const oneAndHalfHourRate = searchParams.get("oneAndHalfHourRate") || "";
   const threeHourRate = searchParams.get("threeHourRate") || "";
   const overnightRate = searchParams.get("overnightRate") || "";
-  const [status, setStatus] = useState("");
+  const initialStatus = searchParams.get("status") || "";
+  const [status, setStatus] = useState(initialStatus);
   const [rows, setRows] = useState([
     { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
   ]);
@@ -126,6 +127,27 @@ const RoomStatus = () => {
     return formatCurrency(grandTotal);
   };
 
+  const handleStatusUpdate = async (newStatus: string) => {
+    try {
+      // Buscar el documento por el campo roomNumber
+      const roomsQuery = query(collection(db, "roomsData"), where("roomNumber", "==", roomNumber));
+      const querySnapshot = await getDocs(roomsQuery);
+
+      if (!querySnapshot.empty) {
+        const roomDoc = querySnapshot.docs[0]; // Obtener el primer documento que coincida
+        const roomDocRef = doc(db, "roomsData", roomDoc.id);
+
+        // Actualizar el estado en Firebase
+        await updateDoc(roomDocRef, { status: newStatus });
+        setStatus(newStatus); // Actualizar el estado localmente
+      } else {
+        console.error("No se encontró un documento con el número de habitación especificado.");
+      }
+    } catch (error) {
+      console.error("Error al actualizar el estado de la habitación: ", error);
+    }
+  };
+
   return (
     <div className="bg-white p-8">
       <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
@@ -141,7 +163,7 @@ const RoomStatus = () => {
                 name="roomStatus"
                 value="ocupado"
                 checked={status === "ocupado"}
-                onChange={handleChange}
+                onChange={() => handleStatusUpdate("ocupado")}
                 className="form-radio text-blue-600"
               />
               <span className="text-blue-800 font-medium">Ocupado</span>
@@ -152,7 +174,7 @@ const RoomStatus = () => {
                 name="roomStatus"
                 value="desocupado"
                 checked={status === "desocupado"}
-                onChange={handleChange}
+                onChange={() => handleStatusUpdate("desocupado")}
                 className="form-radio text-blue-600"
               />
               <span className="text-blue-800 font-medium">Desocupado</span>
