@@ -6,15 +6,13 @@ import { useRouter, usePathname } from "next/navigation";
 
 const TabMenu = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  // No renderizar el TabMenu en la página de login
-  if (pathname === "/login") {
-    return null;
-  }
-
+  const pathname = usePathname(); // Obtener la ruta actual
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("/dashboard");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // No renderizar el TabMenu en la página de login
+  const shouldRenderTabMenu = pathname !== "/login";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -28,6 +26,10 @@ const TabMenu = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  if (!shouldRenderTabMenu) {
+    return null;
+  }
 
   const getButtonClass = (path: string) => {
     return `${
