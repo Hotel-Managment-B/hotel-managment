@@ -1,9 +1,16 @@
-'use client';
+"use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
@@ -14,19 +21,11 @@ interface Product {
 }
 
 const AddPurchase = () => {
-  const searchParams = useSearchParams();
-  const roomNumber = searchParams.get("roomNumber") || "";
-  const hourlyRate = searchParams.get("hourlyRate") || "";
-  const oneAndHalfHourRate = searchParams.get("oneAndHalfHourRate") || "";
-  const threeHourRate = searchParams.get("threeHourRate") || "";
-  const overnightRate = searchParams.get("overnightRate") || "";
-  const initialStatus = searchParams.get("status") || "";
-  const [status, setStatus] = useState(initialStatus);
   const [rows, setRows] = useState([
     { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
   ]);
   const [products, setProducts] = useState<Product[]>([]);
-  
+
   // Cambio importante: Usamos el valor de tarifa original como string
   const [selectedRateDisplay, setSelectedRateDisplay] = useState("");
 
@@ -47,15 +46,20 @@ const AddPurchase = () => {
     fetchProducts();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStatus(e.target.value);
-  };
+ 
 
   const handleAddRow = () => {
-    setRows([...rows, { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" }]);
+    setRows([
+      ...rows,
+      { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
+    ]);
   };
 
-  const handleRowChange = (index: number, field: string, value: string | number) => {
+  const handleRowChange = (
+    index: number,
+    field: string,
+    value: string | number
+  ) => {
     const updatedRows = rows.map((row, i) =>
       i === index ? { ...row, [field]: value } : row
     );
@@ -66,38 +70,36 @@ const AddPurchase = () => {
     setRows(rows.filter((_, i) => i !== index));
   };
 
-  // Nueva función para manejar el cambio de tarifa
-  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Simplemente almacenamos el valor completo como string
-    setSelectedRateDisplay(e.target.value);
-  };
 
-  // Función para calcular el subtotal
   const calculateSubtotal = (quantity: number, unitPrice: string) => {
     // Elimina símbolos de moneda y separadores de miles
-    const cleanPrice = unitPrice.toString().replace(/[^\d.-]/g, '');
+    const cleanPrice = unitPrice.toString().replace(/[^\d.-]/g, "");
     const price = parseFloat(cleanPrice);
     return (quantity * price).toString();
   };
 
   // Función para actualizar todos los campos relacionados al seleccionar un producto
   const handleProductSelection = (index: number, selectedCode: string) => {
-    const selectedProduct = products.find(product => product.code === selectedCode);
-    
+    const selectedProduct = products.find(
+      (product) => product.code === selectedCode
+    );
+
     if (selectedProduct) {
       // Actualizar código, descripción y precio unitario
       const quantity = rows[index].quantity || 1;
       const unitPrice = selectedProduct.unitPurchaseValue;
       const subtotal = calculateSubtotal(quantity, unitPrice);
-      
+
       const updatedRows = rows.map((row, i) =>
-        i === index ? {
-          ...row,
-          code: selectedProduct.code,
-          description: selectedProduct.productName,
-          unitPrice: unitPrice,
-          subtotal: subtotal
-        } : row
+        i === index
+          ? {
+              ...row,
+              code: selectedProduct.code,
+              description: selectedProduct.productName,
+              unitPrice: unitPrice,
+              subtotal: subtotal,
+            }
+          : row
       );
       setRows(updatedRows);
     }
@@ -107,7 +109,7 @@ const AddPurchase = () => {
   const parseMoneyString = (moneyString: string): number => {
     if (!moneyString) return 0;
     // Eliminar símbolos de moneda y puntos de miles, reemplazar coma decimal por punto
-    const cleanedValue = moneyString.replace(/[$\s.]/g, '').replace(',', '.');
+    const cleanedValue = moneyString.replace(/[$\s.]/g, "").replace(",", ".");
     return parseFloat(cleanedValue) || 0;
   };
 
@@ -117,48 +119,32 @@ const AddPurchase = () => {
     const consumptionTotal = rows.reduce((total, row) => {
       return total + parseMoneyString(row.subtotal);
     }, 0);
-    
+
     // Sumar la tarifa seleccionada
     const rateValue = parseMoneyString(selectedRateDisplay);
-    
+
     // Total general
     const grandTotal = consumptionTotal + rateValue;
-    
+
     return formatCurrency(grandTotal);
-  };
-
-  const handleStatusUpdate = async (newStatus: string) => {
-    try {
-      // Buscar el documento por el campo roomNumber
-      const roomsQuery = query(collection(db, "roomsData"), where("roomNumber", "==", roomNumber));
-      const querySnapshot = await getDocs(roomsQuery);
-
-      if (!querySnapshot.empty) {
-        const roomDoc = querySnapshot.docs[0]; // Obtener el primer documento que coincida
-        const roomDocRef = doc(db, "roomsData", roomDoc.id);
-
-        // Actualizar el estado en Firebase
-        await updateDoc(roomDocRef, { status: newStatus });
-        setStatus(newStatus); // Actualizar el estado localmente
-      } else {
-        console.error("No se encontró un documento con el número de habitación especificado.");
-      }
-    } catch (error) {
-      console.error("Error al actualizar el estado de la habitación: ", error);
-    }
   };
 
   return (
     <div className="bg-white p-8">
       <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
         Compras
-      </h1>   
-      <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2">
-        
-        <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-2 w-full overflow-x-auto">
-          <h2 className="text-xl font-semibold text-blue-800 mb-4">Productos</h2>
+      </h1>
+
+      <form className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-3 border-2 border-blue-400 rounded-lg p-6 shadow-lg">
+        <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-3 w-full overflow-x-auto">
+          <h2 className="text-xl font-semibold text-blue-800 mb-4">
+            Productos
+          </h2>
           {rows.map((row, index) => (
-            <div key={index} className="grid grid-cols-[2fr_3fr_1fr_2fr_2fr_auto] gap-4 mb-4">
+            <div
+              key={index}
+              className="grid grid-cols-[2fr_3fr_1fr_2fr_2fr_auto] gap-4 mb-4"
+            >
               <div className="relative">
                 <input
                   type="text"
@@ -168,14 +154,18 @@ const AddPurchase = () => {
                     const value = e.target.value;
                     handleRowChange(index, "code", value);
                     // Verificar si el código ingresado coincide con un producto
-                    const exactMatch = products.find(product => product.code === value);
+                    const exactMatch = products.find(
+                      (product) => product.code === value
+                    );
                     if (exactMatch) {
                       handleProductSelection(index, exactMatch.code);
                     }
                   }}
                   onBlur={(e) => {
                     // Verificar si el código ingresado manualmente existe
-                    const exactMatch = products.find(product => product.code === e.target.value);
+                    const exactMatch = products.find(
+                      (product) => product.code === e.target.value
+                    );
                     if (exactMatch) {
                       handleProductSelection(index, exactMatch.code);
                     }
@@ -185,7 +175,11 @@ const AddPurchase = () => {
                 />
                 <datalist id={`product-options-${index}`}>
                   {products.map((product) => (
-                    <option key={product.code} value={product.code} data-name={product.productName}>
+                    <option
+                      key={product.code}
+                      value={product.code}
+                      data-name={product.productName}
+                    >
                       {product.code} - {product.productName}
                     </option>
                   ))}
@@ -243,17 +237,44 @@ const AddPurchase = () => {
             Agregar Producto
           </button>
         </div>
-        <div className="flex items-center justify-center col-span-2 md:col-span-1 shadow-2xl border-2 border-blue-200 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-blue-800 mb-2 m-4">Total</h2>
+        {/* Método de Pago */}
+        <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 h-32 col-span-3 md:col-span-1 mt-6 mr-0 md:mr-4 flex flex-col justify-between">
+          <h2 className="text-lg font-bold text-blue-700 mb-4">
+            Método de Pago
+          </h2>
+          <select className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="transferencia">Transferencia</option>
+          </select>
+        </div>
+        {/* Total */}
+        <div className="flex flex-row items-center justify-center w-full  h-32 col-span-3 md:col-span-1 shadow-2xl border-2 border-blue-200 rounded-lg p-6 mt-6 ">
+          <h2 className="text-xl font-semibold text-blue-800 mb-2 m-4">
+            Total
+          </h2>
           <p className="text-lg text-blue-800 font-bold mb-2 m-4">
             {calculateTotal()}
           </p>
           <div className="mt-2 text-sm text-gray-600 m-4 hidden">
-            <div>Consumos: {formatCurrency(rows.reduce((total, row) => total + parseMoneyString(row.subtotal), 0))}</div>
+            <div>
+              Consumos:{" "}
+              {formatCurrency(
+                rows.reduce(
+                  (total, row) => total + parseMoneyString(row.subtotal),
+                  0
+                )
+              )}
+            </div>
             <div>Tarifa: {selectedRateDisplay}</div>
           </div>
         </div>
-      </div>
+        <div className="flex items-center justify-center mr-0 md:mr-16 lg:mr-42 col-span-3 md:col-span-1">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 mt-4">
+            Registrar Compra
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
