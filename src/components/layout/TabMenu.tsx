@@ -48,7 +48,13 @@ const TabMenu = () => {
         >
           <FaBars />
         </button>
-        <div className="text-white text-2xl hidden sm:block">Logo</div>
+        <div className="text-white text-2xl hidden sm:block">
+          <img
+            src="/LOGO-VIRGOS-MOTEL-WHITE.png"
+            alt="Logo Virgos Motel"
+            className="h-10"
+          />
+        </div>
         <div className="hidden sm:flex justify-around items-center w-full">
           <div className="relative">
             <button
