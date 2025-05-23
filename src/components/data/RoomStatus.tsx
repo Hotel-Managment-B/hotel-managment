@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, addDoc, serverTimestamp, increment, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
@@ -11,6 +11,14 @@ interface Product {
   code: string;
   productName: string;
   unitSaleValue: string;
+}
+
+interface Row {
+  code: string;
+  description: string;
+  quantity: number | string; // Permitir tanto number como string
+  unitPrice: string;
+  subtotal: string;
 }
 
 const RoomStatus = () => {
@@ -22,10 +30,11 @@ const RoomStatus = () => {
   const overnightRate = searchParams.get("overnightRate") || "";
   const initialStatus = searchParams.get("status") || "";
   const [status, setStatus] = useState(initialStatus);
-  const [rows, setRows] = useState([
+  const [rows, setRows] = useState<Row[]>([
     { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
   ]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<{ id: string; accountName: string }[]>([]); // Estado para las cuentas bancarias
   
   // Cambio importante: Usamos el valor de tarifa original como string
   const [selectedRateDisplay, setSelectedRateDisplay] = useState("");
@@ -47,6 +56,22 @@ const RoomStatus = () => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    const fetchBankAccounts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "bankAccount"));
+        const accountsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          accountName: doc.data().accountName, // Usar el campo accountName
+        }));
+        setBankAccounts(accountsData);
+      } catch (error) {
+        console.error("Error fetching bank accounts: ", error);
+      }
+    };
+    fetchBankAccounts();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStatus(e.target.value);
   };
@@ -56,10 +81,11 @@ const RoomStatus = () => {
   };
 
   const handleRowChange = (index: number, field: string, value: string | number) => {
-    const updatedRows = rows.map((row, i) =>
-      i === index ? { ...row, [field]: value } : row
-    );
-    setRows(updatedRows);
+    setRows(prevRows => {
+      const updatedRows = [...prevRows];
+      updatedRows[index] = { ...updatedRows[index], [field]: value };
+      return updatedRows;
+    });
   };
 
   const handleRemoveRow = (index: number) => {
@@ -88,7 +114,7 @@ const RoomStatus = () => {
       // Actualizar código, descripción y precio unitario
       const quantity = rows[index].quantity || 1;
       const unitPrice = selectedProduct.unitSaleValue;
-      const subtotal = calculateSubtotal(quantity, unitPrice);
+      const subtotal = calculateSubtotal(Number(quantity), unitPrice);
       
       const updatedRows = rows.map((row, i) =>
         i === index ? {
@@ -148,11 +174,111 @@ const RoomStatus = () => {
     }
   };
 
+  const handleRegisterPurchase = async () => {
+    try {
+      const roomNumber = searchParams.get("roomNumber") || ""; // Obtener el número de habitación
+      const total = calculateTotal(); // Obtener el total del label
+      const selectElement = document.querySelector("select");
+      const selectedPaymentMethod = selectElement ? selectElement.options[selectElement.selectedIndex].text : ""; // Obtener el texto del método de pago seleccionado
+
+      // Crear la colección roomHistory con la subcolección details
+      const roomHistoryRef = await addDoc(collection(db, "roomHistory"), {
+        date: serverTimestamp(),
+        roomNumber: roomNumber,
+        total: total,
+        paymentMethod: selectedPaymentMethod, // Registrar el método de pago
+      });
+
+      const detailsRef = collection(roomHistoryRef, "details");
+      for (const row of rows) {
+        await addDoc(detailsRef, {
+          code: row.code,
+          description: row.description,
+          unitPrice: row.unitPrice,
+          quantity: row.quantity,
+          subtotal: row.subtotal,
+        });
+      }
+
+      // Actualizar el monto en la cuenta bancaria
+      await updateBankAccountAmount(selectedPaymentMethod, parseMoneyString(total));
+
+      // Resetear el componente
+      setRows([{ code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" }]);
+      setStatus("desocupado");
+
+      alert("Compra registrada exitosamente y habitación desocupada");
+    } catch (error) {
+      console.error("Error al registrar la compra: ", error);
+      alert("Hubo un error al registrar la compra");
+    }
+  };
+
+  const updateBankAccountAmount = async (selectedPaymentMethod: string, total: number) => {
+    try {
+      // Buscar el documento en la colección bankAccount que coincida con el accountName
+      const bankAccountQuery = query(
+        collection(db, "bankAccount"),
+        where("accountName", "==", selectedPaymentMethod) // Comparar directamente con accountName
+      );
+      const querySnapshot = await getDocs(bankAccountQuery);
+
+      if (!querySnapshot.empty) {
+        const bankAccountDoc = querySnapshot.docs[0]; // Obtener el primer documento que coincida
+        const bankAccountRef = doc(db, "bankAccount", bankAccountDoc.id); // Referencia al documento
+
+        // Actualizar el campo initialAmount sumando el total
+        await updateDoc(bankAccountRef, {
+          initialAmount: increment(total),
+        });
+
+        console.log("Monto actualizado exitosamente en la cuenta bancaria");
+      } else {
+        console.warn("No se encontró una cuenta bancaria con el nombre: ", selectedPaymentMethod);
+      }
+    } catch (error) {
+      console.error("Error al actualizar el monto de la cuenta bancaria: ", error);
+    }
+  };
+
+  const handleUpdateProductQuantity = async () => {
+    try {
+      for (const row of rows) {
+        if (row.code) {
+          // Asegurar que la cantidad sea un número válido
+          const quantityToDeduct = typeof row.quantity === 'string' ? 
+            (parseInt(row.quantity, 10) || 1) : 
+            (row.quantity || 1);
+            
+          // Buscar el producto por código en la colección usando query
+          const productsQuery = query(collection(db, "products"), where("code", "==", row.code));
+          const querySnapshot = await getDocs(productsQuery);
+          
+          if (!querySnapshot.empty) {
+            const productDoc = querySnapshot.docs[0];
+            const productRef = doc(db, "products", productDoc.id);
+            
+            await updateDoc(productRef, {
+              quantity: increment(-quantityToDeduct), // Descontar la cantidad correcta
+            });
+          } else {
+            console.warn(`Producto con código ${row.code} no encontrado.`);
+          }
+        }
+      }
+      alert("Inventario actualizado exitosamente");
+    } catch (error) {
+      console.error("Error al actualizar el inventario: ", error);
+      alert("Hubo un error al actualizar el inventario");
+    }
+  };
+
   return (
     <div className="bg-white p-8">
       <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
         Consumo de la Habitación {roomNumber}
       </h1>   
+
       <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2 border-2 border-blue-400 rounded-lg p-6 sahdow-lg">
         <div className="flex flex-col items-center bg-white shadow-2xl rounded-lg mr-2 p-6 col-span-2 lg:col-span-1 border-2 border-blue-200">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Estado de la Habitación</h2>
@@ -181,6 +307,7 @@ const RoomStatus = () => {
             </label>
           </div>
         </div>
+
         <div className="flex items-center justify-center col-span-2 md:col-span-1 shadow-2xl border-2 border-blue-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-blue-800 mb-2 m-4">Total</h2>
           <p className="text-lg text-blue-800 font-bold mb-2 m-4">
@@ -191,6 +318,7 @@ const RoomStatus = () => {
             <div>Tarifa: {selectedRateDisplay}</div>
           </div>
         </div>
+
         <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-2 ">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Tarifas</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -240,6 +368,7 @@ const RoomStatus = () => {
             Tarifa seleccionada: {selectedRateDisplay}
           </div>
         </div>
+
         <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-2 w-full overflow-x-auto">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Consumos</h2>
           {rows.map((row, index) => (
@@ -286,14 +415,40 @@ const RoomStatus = () => {
               <input
                 type="number"
                 placeholder="Cantidad"
-                defaultValue={row.quantity || 1}
+                value={row.quantity}
                 onChange={(e) => {
-                  const quantity = parseInt(e.target.value, 10) || 0;
+                  const inputValue = e.target.value;
+                  // Permitir valores vacíos y números
+                  const quantity = inputValue === "" ? "" : inputValue;
                   handleRowChange(index, "quantity", quantity);
-                  // Recalcular el subtotal cuando cambia la cantidad
-                  if (row.unitPrice) {
-                    const subtotal = calculateSubtotal(quantity, row.unitPrice);
+                  
+                  // Recalcular el subtotal solo si hay un valor numérico válido
+                  if (row.unitPrice && inputValue !== "" && !isNaN(Number(inputValue))) {
+                    const numQuantity = Number(inputValue);
+                    const subtotal = calculateSubtotal(numQuantity, row.unitPrice);
                     handleRowChange(index, "subtotal", subtotal);
+                  } else if (inputValue === "" || isNaN(Number(inputValue))) {
+                    // Si no hay cantidad válida, limpiar el subtotal
+                    handleRowChange(index, "subtotal", "");
+                  }
+                }}
+                onBlur={(e) => {
+                  const inputValue = e.target.value;
+                  // Al perder el foco, asegurar que haya un valor mínimo de 1
+                  if (inputValue === "" || isNaN(Number(inputValue)) || Number(inputValue) < 1) {
+                    handleRowChange(index, "quantity", 1);
+                    if (row.unitPrice) {
+                      const subtotal = calculateSubtotal(1, row.unitPrice);
+                      handleRowChange(index, "subtotal", subtotal);
+                    }
+                  } else {
+                    // Asegurar que sea un número entero
+                    const finalQuantity = Math.max(1, Math.floor(Number(inputValue)));
+                    handleRowChange(index, "quantity", finalQuantity);
+                    if (row.unitPrice) {
+                      const subtotal = calculateSubtotal(finalQuantity, row.unitPrice);
+                      handleRowChange(index, "subtotal", subtotal);
+                    }
                   }
                 }}
                 className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
@@ -327,6 +482,31 @@ const RoomStatus = () => {
           >
             Agregar Fila
           </button>
+        </div>
+          <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 h-32 col-span-2 md:col-span-1 mt-6 mr-0 md:mr-4 flex flex-col justify-between">
+          <h2 className="text-lg font-bold text-blue-700 mb-4">
+            Método de Pago
+          </h2>
+          <select className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            {bankAccounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.accountName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-span-2 md:col-span-1 flex justify-center mt-8">
+          <button
+          onClick={async () => {
+            await handleRegisterPurchase(); // Registrar la compra
+            await handleUpdateProductQuantity(); // Actualizar el inventario
+            setStatus("desocupado"); // Cambiar el estado de la habitación a desocupado
+            await handleStatusUpdate("desocupado"); // Actualizar el estado en Firebase
+          }}
+          className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-32 lg:mr-96"
+        >
+          Registrar Compra
+        </button>
         </div>
       </div>
     </div>
