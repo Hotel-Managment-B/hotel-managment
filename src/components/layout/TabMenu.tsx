@@ -2,10 +2,16 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { FaBars } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const TabMenu = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  // No renderizar el TabMenu en la página de login
+  if (pathname === "/login") {
+    return null;
+  }
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("/dashboard");
   const menuRef = useRef<HTMLDivElement>(null);
