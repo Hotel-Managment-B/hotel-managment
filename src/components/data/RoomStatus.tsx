@@ -153,7 +153,7 @@ const RoomStatus = () => {
       <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
         Consumo de la Habitación {roomNumber}
       </h1>   
-      <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2">
+      <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2 border-2 border-blue-400 rounded-lg p-6 sahdow-lg">
         <div className="flex flex-col items-center bg-white shadow-2xl rounded-lg mr-2 p-6 col-span-2 lg:col-span-1 border-2 border-blue-200">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Estado de la Habitación</h2>
           <div className="flex items-center space-x-4">
