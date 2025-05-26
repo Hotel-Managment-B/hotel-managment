@@ -44,8 +44,8 @@ const ToiletriesPurchase = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="p-4 bg-white rounded-md max-w-4xl shadow-2xl border-2 border-blue-200 mt-16 mr-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 border-2 border-blue-800 p-2 rounded-lg mt-16">
+        <div className="p-4 bg-white rounded-md max-w-full shadow-2xl border-2 border-blue-200 mr-0 md:mr-4">
       <h1 className="text-lg font-semibold mb-4 text-blue-900">
         Compra de Artículos de Aseo
       </h1>
@@ -95,7 +95,7 @@ const ToiletriesPurchase = () => {
         Agregar Fila
       </button>
     </div>
-    <div className="flex justify-center items-center mt-16 shadow-2xl border-2 border-blue-200 p-4 rounded-md">
+    <div className="flex justify-center items-center shadow-2xl border-2 border-blue-200 p-4 rounded-md">
         <p className="text-lg font-bold text-blue-900 mt-4">Total: {formatCurrency(calculateTotalSum())}</p>
     </div>
     </div>
