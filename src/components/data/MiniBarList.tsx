@@ -52,48 +52,48 @@ const MiniBarList = () => {
 
   return (
     <div className="p-4 bg-white shadow-md rounded-md">
-        <div className='flex justify-center items-center'>
-      <h2 className="text-2xl text-blue-900 font-bold mb-4 mt-16">Historial de Compras del Mini Bar</h2>
-        </div>
-      <div className="flex justify-end items-center mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 mt-12">
+        <h2 className="text-lg font-bold text-center text-blue-900">Lista de Compras del Mini Bar</h2>
         <button
           onClick={() => router.push('/minibar-purchase')}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
         >
-            Registrar Nueva Compra
+          Comprar
         </button>
       </div>
-      <table className="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-blue-100">
-            <th className="border border-gray-300 px-4 py-2">Fecha</th>
-            <th className="border border-gray-300 px-4 py-2">Método de Pago</th>
-            <th className="border border-gray-300 px-4 py-2">Total</th>
-            <th className="border border-gray-300 px-4 py-2">Detalles</th>
-          </tr>
-        </thead>
-        <tbody>
-          {purchases.map(purchase => (
-            <tr key={purchase.id} className="text-center">
-              <td className="border border-gray-300 px-4 py-2">{new Date(purchase.date?.seconds * 1000).toLocaleDateString()}</td>
-              <td className="border border-gray-300 px-4 py-2">{purchase.paymentMethod}</td>
-              <td className="border border-gray-300 px-4 py-2">{formatCurrency(purchase.total)}</td>
-              <td className="border border-gray-300 px-4 py-2">
-                <button
-                  onClick={() => fetchDetails(purchase.id)}
-                  className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                >
-                  Detalle
-                </button>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full border-collapse border border-gray-300 text-sm sm:text-base">
+          <thead>
+            <tr className="bg-blue-100">
+              <th className="border border-gray-300 px-4 py-2">Fecha</th>
+              <th className="border border-gray-300 px-4 py-2">Método de Pago</th>
+              <th className="border border-gray-300 px-4 py-2">Total</th>
+              <th className="border border-gray-300 px-4 py-2">Detalles</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {purchases.map((purchase) => (
+              <tr key={purchase.id} className="text-center">
+                <td className="border border-gray-300 px-4 py-2">{new Date(purchase.date?.seconds * 1000).toLocaleDateString()}</td>
+                <td className="border border-gray-300 px-4 py-2">{purchase.paymentMethod}</td>
+                <td className="border border-gray-300 px-4 py-2">{formatCurrency(purchase.total)}</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <button
+                    onClick={() => fetchDetails(purchase.id)}
+                    className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Detalle
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-blue-50 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-md w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto shadow-2xl border-2 border-blue-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md shadow-md w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto">
             <h3 className="text-xl font-bold mb-6">Detalles</h3>
             <div className="grid grid-cols-4 gap-4">
               <span className="font-bold">Descripción</span>
