@@ -6,7 +6,11 @@ import { app } from "../../firebase/Index";
 import { FaTimes } from "react-icons/fa";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
-const ToiletriesPurchase = () => {
+interface ToiletriesPurchaseProps {
+  onPurchaseSaved: () => void;
+}
+
+const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved }) => {
   const [rows, setRows] = useState([
     { description: "", quantity: "", total: "" },
   ]);
@@ -127,6 +131,7 @@ const ToiletriesPurchase = () => {
       }
 
       alert('Compra guardada exitosamente');
+      onPurchaseSaved(); // Llamar a la función para actualizar la lista
     } catch (error) {
       console.error('Error al guardar la compra:', error);
       alert('Hubo un error al guardar la compra');
@@ -135,13 +140,10 @@ const ToiletriesPurchase = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="flex justify-center items-center">
-        <h1 className="text-2xl font-semibold mb-4 text-blue-900 mt-16">
+      <div className="grid grid-cols-1 border-2 border-blue-200 shadow-2xl  p-2 rounded-lg max-w-7xl mt-16">
+        <h1 className="text-lg font-semibold m-4 text-blue-900 ">
           Compra de Artículos de Aseo
         </h1>
-      </div>
-
-      <div className="grid grid-cols-1 border-2 border-blue-600 p-2 rounded-lg max-w-7xl">
         <div className="p-4 bg-white rounded-md max-w-full shadow-2xl border-2 border-blue-200 mt-4 mb-4">
           {rows.map((row, index) => (
             <div
