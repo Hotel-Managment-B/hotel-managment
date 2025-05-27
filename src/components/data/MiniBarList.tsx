@@ -52,8 +52,8 @@ const MiniBarList = () => {
 
   return (
     <div className="p-4 bg-white shadow-md rounded-md">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 mt-12">
-        <h2 className="text-lg font-bold text-center text-blue-900">Lista de Compras del Mini Bar</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 mt-4">
+        <h2 className="text-xl font-bold text-center text-blue-900">Historial de Compras del Mini Bar</h2>
         <button
           onClick={() => router.push('/minibar-purchase')}
           className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -92,8 +92,8 @@ const MiniBarList = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-md shadow-md w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto">
+        <div className="fixed inset-0 bg-blue-50 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md shadow-2xl border-2 border-blue-200 w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto">
             <h3 className="text-xl font-bold mb-6">Detalles</h3>
             <div className="grid grid-cols-4 gap-4">
               <span className="font-bold">Descripción</span>

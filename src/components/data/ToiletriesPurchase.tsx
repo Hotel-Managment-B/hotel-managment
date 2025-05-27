@@ -140,7 +140,7 @@ const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="grid grid-cols-1 border-2 border-blue-200 shadow-2xl  p-2 rounded-lg max-w-7xl mt-16">
+      <div className="grid grid-cols-1 border-2 border-blue-200 shadow-2xl  p-2 rounded-lg max-w-7xl mt-4">
         <h1 className="text-lg font-semibold m-4 text-blue-900 ">
           Compra de Artículos de Aseo
         </h1>
