@@ -54,44 +54,35 @@ const TabMenu = () => {
         >
           <button
             onClick={() => {
-              setActiveTab("/dashboard");
+              setActiveTab("/inicio");
               setIsMenuOpen(false);
-              router.push("/dashboard");
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_INIT_ROUTE || "/");
             }}
-            className={getButtonClass("/dashboard")}
+            className={getButtonClass("/inicio")}
           >
-            Dashboard
+            Inicio
           </button>
           <button
             onClick={() => {
-              setActiveTab("/products-mb");
+              setActiveTab("/registrar");
               setIsMenuOpen(false);
-              router.push("/products-mb");
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_P || "/");
             }}
-            className={getButtonClass("/products-mb")}
+            className={getButtonClass("/registrar")}
           >
             Registrar
           </button>
           <button
             onClick={() => {
-              setActiveTab("/product-list");
+              setActiveTab("/compras");
               setIsMenuOpen(false);
-              router.push("/product-list");
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_C || "/");
             }}
-            className={getButtonClass("/product-list")}
+            className={getButtonClass("/compras")}
           >
-            Inventario
+            Compras
           </button>
-          <button
-            onClick={() => {
-              setActiveTab("/room-data");
-              setIsMenuOpen(false);
-              router.push("/room-data");
-            }}
-            className={getButtonClass("/room-data")}
-          >
-            Habitaciones
-          </button>
+          
           <button
             onClick={() => {
               setActiveTab("/reportes");
@@ -100,7 +91,17 @@ const TabMenu = () => {
             }}
             className={getButtonClass("/reportes")}
           >
-            Reportes
+            Inventario
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/habitaciones");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_H || "/");
+            }}
+            className={getButtonClass("/habitaciones")}
+          >
+            Habitaciones
           </button>
           <button
             onClick={() => {
