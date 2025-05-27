@@ -40,96 +40,17 @@ const TabMenu = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full bg-blue-600 shadow-md z-50">
-      <div className="flex justify-between items-center h-12 px-4">
-        <button
-          className="sm:hidden text-white text-2xl focus:outline-none"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          <FaBars />
-        </button>
-        <div className="text-white text-2xl hidden sm:block">
-          <img
-            src="/LOGO-VIRGOS-MOTEL-WHITE.png"
-            alt="Logo Virgos Motel"
-            className="h-10"
-          />
-        </div>
-        <div className="hidden sm:flex justify-around items-center w-full">
-          <div className="relative">
-            <button
-              onClick={() => {
-                setActiveTab("/dashboard");
-                router.push("/dashboard");
-              }}
-              className={getButtonClass("/dashboard")}
-            >
-              Dashboard
-            </button>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => {
-                setActiveTab("/products-mb");
-                router.push("/products-mb");
-              }}
-              className={getButtonClass("/products-mb")}
-            >
-              Registrar
-            </button>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => {
-                setActiveTab("/product-list");
-                router.push("/product-list");
-              }}
-              className={getButtonClass("/product-list")}
-            >
-              Inventario
-            </button>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => {
-                setActiveTab("/room-data");
-                router.push("/room-data");
-              }}
-              className={getButtonClass("/room-data")}
-            >
-              Habitaciones
-            </button>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setActiveTab("/reportes")}
-              className={getButtonClass("/reportes")}
-            >
-              Reportes
-            </button>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setActiveTab("/configuracion")}
-              className={getButtonClass("/configuracion")}
-            >
-              Configuración
-            </button>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setActiveTab("/ayuda")}
-              className={getButtonClass("/ayuda")}
-            >
-              Ayuda
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="fixed top-0 left-0 z-50 m-2">
+      <button
+        className="text-white text-2xl p-2 focus:outline-none bg-blue-600 rounded-md"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        <FaBars />
+      </button>
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="sm:hidden bg-blue-700 text-white flex flex-col items-start p-4"
+          className="absolute top-12 left-0 bg-blue-600 text-white flex flex-col items-start p-4 rounded-md shadow-lg"
         >
           <button
             onClick={() => {
@@ -139,7 +60,7 @@ const TabMenu = () => {
             }}
             className={getButtonClass("/dashboard")}
           >
-            Inicio
+            Dashboard
           </button>
           <button
             onClick={() => {
@@ -149,7 +70,7 @@ const TabMenu = () => {
             }}
             className={getButtonClass("/products-mb")}
           >
-            Productos
+            Registrar
           </button>
           <button
             onClick={() => {
@@ -163,13 +84,13 @@ const TabMenu = () => {
           </button>
           <button
             onClick={() => {
-              setActiveTab("/ventas");
+              setActiveTab("/room-data");
               setIsMenuOpen(false);
-              router.push("/ventas");
+              router.push("/room-data");
             }}
-            className={getButtonClass("/ventas")}
+            className={getButtonClass("/room-data")}
           >
-            Ventas
+            Habitaciones
           </button>
           <button
             onClick={() => {
