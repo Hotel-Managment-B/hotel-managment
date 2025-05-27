@@ -134,15 +134,15 @@ const ToiletriesPurchase = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center">
       <div className="flex justify-center items-center">
         <h1 className="text-2xl font-semibold mb-4 text-blue-900 mt-16">
           Compra de Artículos de Aseo
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 border-2 border-blue-800 p-2 rounded-lg ">
-        <div className="p-4 bg-white rounded-md max-w-full shadow-2xl border-2 border-blue-200 mr-0 md:mr-4">
+      <div className="grid grid-cols-1 border-2 border-blue-600 p-2 rounded-lg max-w-7xl">
+        <div className="p-4 bg-white rounded-md max-w-full shadow-2xl border-2 border-blue-200 mt-4 mb-4">
           {rows.map((row, index) => (
             <div
               key={index}
@@ -199,7 +199,7 @@ const ToiletriesPurchase = () => {
             Agregar Fila
           </button>
         </div>
-        <div className=" shadow-2xl border-2 border-blue-200 p-4 rounded-md">
+        <div className=" shadow-2xl border-2 border-blue-200 p-4 rounded-md mt-4 mb-4">
           <select
             value={selectedAccount}
             onChange={(e) => setSelectedAccount(e.target.value)}
@@ -213,7 +213,7 @@ const ToiletriesPurchase = () => {
             ))}
           </select>
         </div>
-        <div className="flex flex-col justify-center items-center shadow-2xl border-2 border-blue-200 p-4 rounded-md mt-4 mr-0 md:mr-4 ">
+        <div className="flex flex-col justify-center items-center shadow-2xl border-2 border-blue-200 p-4 rounded-md mt-4 mb-4">
           <p className="text-lg font-bold text-blue-900 mt-4">
             Total: {formatCurrency(calculateTotalSum())}
           </p>
