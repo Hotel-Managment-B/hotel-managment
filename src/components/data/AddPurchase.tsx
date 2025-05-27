@@ -140,7 +140,7 @@ const AddPurchase = () => {
 
   const handleRegisterPurchase = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    
+
     try {
       const paymentMethodSelect = document.querySelector("select");
       if (!paymentMethodSelect) {
@@ -162,7 +162,7 @@ const AddPurchase = () => {
 
       // Agregar los detalles de los productos a la subcolección details
       const detailsCollectionRef = collection(purchaseRef, "details");
-      
+
       // Procesar cada fila: guardar en details y actualizar stock en products
       await Promise.all(
         rows.map(async (row) => {
@@ -226,6 +226,34 @@ const AddPurchase = () => {
           }
         })
       );
+
+      // Descontar el total del campo initialAmount en la colección bankAccount
+      const bankAccountQuery = query(
+        collection(db, "bankAccount"),
+        where("accountName", "==", paymentMethod)
+      );
+      
+      const bankAccountSnapshot = await getDocs(bankAccountQuery);
+      
+      if (!bankAccountSnapshot.empty) {
+        const bankAccountDoc = bankAccountSnapshot.docs[0];
+        const bankAccountData = bankAccountDoc.data();
+        
+        console.log("Datos de la cuenta bancaria:", bankAccountData);
+        
+        // Calcular nuevo monto inicial
+        const currentInitialAmount = Number(bankAccountData.initialAmount || 0);
+        const newInitialAmount = currentInitialAmount - parseMoneyString(total);
+        
+        // Actualizar documento de la cuenta bancaria
+        await updateDoc(bankAccountDoc.ref, {
+          initialAmount: newInitialAmount
+        });
+        
+        console.log(`Monto descontado exitosamente. Nuevo monto inicial: ${newInitialAmount}`);
+      } else {
+        console.warn(`No se encontró la cuenta bancaria para el método de pago: "${paymentMethod}"`);
+      }
 
       alert("Compra registrada exitosamente y stock actualizado");
       
