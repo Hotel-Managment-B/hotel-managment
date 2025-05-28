@@ -51,7 +51,7 @@ const MiniBarList = () => {
   };
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-md">
+    <div className="p-4 m-4 bg-white">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 mt-4">
         <h2 className="text-xl font-bold text-center text-blue-900">Historial de Compras del Mini Bar</h2>
         <button
