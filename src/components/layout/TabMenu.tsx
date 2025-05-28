@@ -85,11 +85,11 @@ const TabMenu = () => {
           
           <button
             onClick={() => {
-              setActiveTab("/reportes");
+              setActiveTab("/inventario");
               setIsMenuOpen(false);
-              router.push("/reportes");
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_I || "/");
             }}
-            className={getButtonClass("/reportes")}
+            className={getButtonClass("/inventario")}
           >
             Inventario
           </button>
