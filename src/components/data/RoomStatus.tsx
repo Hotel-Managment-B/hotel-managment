@@ -7,6 +7,7 @@ import { collection, getDocs, query, where, doc, updateDoc, addDoc, serverTimest
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
+
 interface Product {
   code: string;
   productName: string;
@@ -16,7 +17,7 @@ interface Product {
 interface Row {
   code: string;
   description: string;
-  quantity: number | string; // Permitir tanto number como string
+  quantity: number | string;
   unitPrice: string;
   subtotal: string;
 }
@@ -29,15 +30,19 @@ const RoomStatus = () => {
   const threeHourRate = searchParams.get("threeHourRate") || "";
   const overnightRate = searchParams.get("overnightRate") || "";
   const initialStatus = searchParams.get("status") || "";
+  
   const [status, setStatus] = useState(initialStatus);
   const [rows, setRows] = useState<Row[]>([
     { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
   ]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [bankAccounts, setBankAccounts] = useState<{ id: string; accountName: string }[]>([]); // Estado para las cuentas bancarias
+  const [bankAccounts, setBankAccounts] = useState<{ id: string; accountName: string }[]>([]);
   
-  // Cambio importante: Usamos el valor de tarifa original como string
-  const [selectedRateDisplay, setSelectedRateDisplay] = useState("");
+  // Estados simplificados para las tarifas
+  const [checkInTime, setCheckInTime] = useState("");
+  const [checkOutTime, setCheckOutTime] = useState("");
+  const [selectedRate, setSelectedRate] = useState<number>(0); // Inicializar con 0 en lugar de null
+  const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -62,7 +67,7 @@ const RoomStatus = () => {
         const querySnapshot = await getDocs(collection(db, "bankAccount"));
         const accountsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          accountName: doc.data().accountName, // Usar el campo accountName
+          accountName: doc.data().accountName,
         }));
         setBankAccounts(accountsData);
       } catch (error) {
@@ -92,15 +97,8 @@ const RoomStatus = () => {
     setRows(rows.filter((_, i) => i !== index));
   };
 
-  // Nueva función para manejar el cambio de tarifa
-  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Simplemente almacenamos el valor completo como string
-    setSelectedRateDisplay(e.target.value);
-  };
-
   // Función para calcular el subtotal
   const calculateSubtotal = (quantity: number, unitPrice: string) => {
-    // Elimina símbolos de moneda y separadores de miles
     const cleanPrice = unitPrice.toString().replace(/[^\d.-]/g, '');
     const price = parseFloat(cleanPrice);
     return (quantity * price).toString();
@@ -111,7 +109,6 @@ const RoomStatus = () => {
     const selectedProduct = products.find(product => product.code === selectedCode);
     
     if (selectedProduct) {
-      // Actualizar código, descripción y precio unitario
       const quantity = rows[index].quantity || 1;
       const unitPrice = selectedProduct.unitSaleValue;
       const subtotal = calculateSubtotal(Number(quantity), unitPrice);
@@ -132,40 +129,75 @@ const RoomStatus = () => {
   // Función para convertir un string con formato de moneda a número
   const parseMoneyString = (moneyString: string): number => {
     if (!moneyString) return 0;
-    // Eliminar símbolos de moneda y puntos de miles, reemplazar coma decimal por punto
     const cleanedValue = moneyString.replace(/[$\s.]/g, '').replace(',', '.');
     return parseFloat(cleanedValue) || 0;
   };
 
-  // Calcular el total (consumos + tarifa seleccionada)
-  const calculateTotal = () => {
-    // Sumar subtotales de productos
-    const consumptionTotal = rows.reduce((total, row) => {
-      return total + parseMoneyString(row.subtotal);
-    }, 0);
+  // Nueva función para calcular el total basado en períodos de tiempo
+  const calculateTotalByHours = (checkIn: string, checkOut: string, rate: number): number => {
+    if (!checkIn || !checkOut || rate === 0) return 0;
     
-    // Sumar la tarifa seleccionada
-    const rateValue = parseMoneyString(selectedRateDisplay);
+    const [checkInHours, checkInMinutes] = checkIn.split(":").map(Number);
+    const [checkOutHours, checkOutMinutes] = checkOut.split(":").map(Number);
     
-    // Total general
-    const grandTotal = consumptionTotal + rateValue;
+    // Calcular tiempo total en minutos
+    let totalMinutes = (checkOutHours * 60 + checkOutMinutes) - (checkInHours * 60 + checkInMinutes);
     
-    return formatCurrency(grandTotal);
+    // Ajustar si la salida es al día siguiente
+    if (totalMinutes < 0) {
+      totalMinutes += 24 * 60; // Agregar 24 horas en minutos
+    }
+    
+    // Determinar el período de tiempo según la tarifa seleccionada
+    let periodMinutes = 60; // Por defecto 1 hora
+    let isOvernightRate = false;
+    
+    // Identificar el tipo de tarifa basado en los valores
+    const hourlyRateValue = parseMoneyString(hourlyRate);
+    const oneAndHalfHourRateValue = parseMoneyString(oneAndHalfHourRate);
+    const threeHourRateValue = parseMoneyString(threeHourRate);
+    const overnightRateValue = parseMoneyString(overnightRate);
+    
+    if (rate === hourlyRateValue) {
+      periodMinutes = 60; // 1 hora
+    } else if (rate === oneAndHalfHourRateValue) {
+      periodMinutes = 90; // 1.5 horas
+    } else if (rate === threeHourRateValue) {
+      periodMinutes = 180; // 3 horas
+    } else if (rate === overnightRateValue) {
+      isOvernightRate = true; // Tarifa fija nocturna
+    }
+    
+    // Calcular el total según el tipo de tarifa
+    if (isOvernightRate) {
+      // Para tarifa nocturna, cobrar tarifa fija
+      return rate;
+    } else {
+      // Calcular cuántos períodos completos hay
+      const completePeriods = Math.ceil(totalMinutes / periodMinutes);
+      return completePeriods * rate;
+    }
   };
+
+  const handleCalculateTotal = () => {
+    const consumptionTotal = rows.reduce((sum, row) => sum + parseFloat(row.subtotal || "0"), 0);
+    const hourlyTotal = calculateTotalByHours(checkInTime, checkOutTime, selectedRate);
+    setTotalAmount(consumptionTotal + hourlyTotal);
+  };
+
+  useEffect(() => {
+    handleCalculateTotal();
+  }, [checkInTime, checkOutTime, selectedRate, rows]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
-      // Buscar el documento por el campo roomNumber
       const roomsQuery = query(collection(db, "roomsData"), where("roomNumber", "==", roomNumber));
       const querySnapshot = await getDocs(roomsQuery);
-
       if (!querySnapshot.empty) {
-        const roomDoc = querySnapshot.docs[0]; // Obtener el primer documento que coincida
+        const roomDoc = querySnapshot.docs[0];
         const roomDocRef = doc(db, "roomsData", roomDoc.id);
-
-        // Actualizar el estado en Firebase
         await updateDoc(roomDocRef, { status: newStatus });
-        setStatus(newStatus); // Actualizar el estado localmente
+        setStatus(newStatus);
       } else {
         console.error("No se encontró un documento con el número de habitación especificado.");
       }
@@ -176,17 +208,16 @@ const RoomStatus = () => {
 
   const handleRegisterPurchase = async () => {
     try {
-      const roomNumber = searchParams.get("roomNumber") || ""; // Obtener el número de habitación
-      const total = calculateTotal(); // Obtener el total del label
+      const roomNumber = searchParams.get("roomNumber") || "";
+      const total = formatCurrency(totalAmount); // Usar totalAmount directamente
       const selectElement = document.querySelector("select");
-      const selectedPaymentMethod = selectElement ? selectElement.options[selectElement.selectedIndex].text : ""; // Obtener el texto del método de pago seleccionado
+      const selectedPaymentMethod = selectElement ? selectElement.options[selectElement.selectedIndex].text : "";
 
-      // Crear la colección roomHistory con la subcolección details
       const roomHistoryRef = await addDoc(collection(db, "roomHistory"), {
         date: serverTimestamp(),
         roomNumber: roomNumber,
         total: total,
-        paymentMethod: selectedPaymentMethod, // Registrar el método de pago
+        paymentMethod: selectedPaymentMethod,
       });
 
       const detailsRef = collection(roomHistoryRef, "details");
@@ -200,13 +231,14 @@ const RoomStatus = () => {
         });
       }
 
-      // Actualizar el monto en la cuenta bancaria
-      await updateBankAccountAmount(selectedPaymentMethod, parseMoneyString(total));
+      await updateBankAccountAmount(selectedPaymentMethod, totalAmount);
 
       // Resetear el componente
       setRows([{ code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" }]);
       setStatus("desocupado");
-
+      setSelectedRate(0);
+      setCheckInTime("");
+      setCheckOutTime("");
       alert("Compra registrada exitosamente y habitación desocupada");
     } catch (error) {
       console.error("Error al registrar la compra: ", error);
@@ -216,22 +248,17 @@ const RoomStatus = () => {
 
   const updateBankAccountAmount = async (selectedPaymentMethod: string, total: number) => {
     try {
-      // Buscar el documento en la colección bankAccount que coincida con el accountName
       const bankAccountQuery = query(
         collection(db, "bankAccount"),
-        where("accountName", "==", selectedPaymentMethod) // Comparar directamente con accountName
+        where("accountName", "==", selectedPaymentMethod)
       );
       const querySnapshot = await getDocs(bankAccountQuery);
-
       if (!querySnapshot.empty) {
-        const bankAccountDoc = querySnapshot.docs[0]; // Obtener el primer documento que coincida
-        const bankAccountRef = doc(db, "bankAccount", bankAccountDoc.id); // Referencia al documento
-
-        // Actualizar el campo initialAmount sumando el total
+        const bankAccountDoc = querySnapshot.docs[0];
+        const bankAccountRef = doc(db, "bankAccount", bankAccountDoc.id);
         await updateDoc(bankAccountRef, {
           initialAmount: increment(total),
         });
-
         console.log("Monto actualizado exitosamente en la cuenta bancaria");
       } else {
         console.warn("No se encontró una cuenta bancaria con el nombre: ", selectedPaymentMethod);
@@ -245,12 +272,10 @@ const RoomStatus = () => {
     try {
       for (const row of rows) {
         if (row.code) {
-          // Asegurar que la cantidad sea un número válido
           const quantityToDeduct = typeof row.quantity === 'string' ? 
             (parseInt(row.quantity, 10) || 1) : 
             (row.quantity || 1);
             
-          // Buscar el producto por código en la colección usando query
           const productsQuery = query(collection(db, "products"), where("code", "==", row.code));
           const querySnapshot = await getDocs(productsQuery);
           
@@ -259,7 +284,7 @@ const RoomStatus = () => {
             const productRef = doc(db, "products", productDoc.id);
             
             await updateDoc(productRef, {
-              quantity: increment(-quantityToDeduct), // Descontar la cantidad correcta
+              quantity: increment(-quantityToDeduct),
             });
           } else {
             console.warn(`Producto con código ${row.code} no encontrado.`);
@@ -278,7 +303,6 @@ const RoomStatus = () => {
       <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
         Consumo de la Habitación {roomNumber}
       </h1>   
-
       <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2 border-2 border-blue-400 rounded-lg p-6 sahdow-lg">
         <div className="flex flex-col items-center bg-white shadow-2xl rounded-lg mr-2 p-6 col-span-2 lg:col-span-1 border-2 border-blue-200">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Estado de la Habitación</h2>
@@ -307,68 +331,55 @@ const RoomStatus = () => {
             </label>
           </div>
         </div>
-
         <div className="flex items-center justify-center col-span-2 md:col-span-1 shadow-2xl border-2 border-blue-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-blue-800 mb-2 m-4">Total</h2>
           <p className="text-lg text-blue-800 font-bold mb-2 m-4">
-            {calculateTotal()}
+            {formatCurrency(totalAmount)}
           </p>
-          <div className="mt-2 text-sm text-gray-600 m-4 hidden">
-            <div>Consumos: {formatCurrency(rows.reduce((total, row) => total + parseMoneyString(row.subtotal), 0))}</div>
-            <div>Tarifa: {selectedRateDisplay}</div>
-          </div>
         </div>
-
         <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-2 ">
-          <h2 className="text-xl font-semibold text-blue-800 mb-4">Tarifas</h2>
+          <h2 className="text-xl font-semibold text-blue-800 mb-4">Hora de Ingreso y Salida</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <label className="text-lg text-blue-800 flex items-center space-x-2">
-              <input 
-                type="radio" 
-                name="rate" 
-                value={hourlyRate} 
-                className="form-radio text-blue-600" 
-                onChange={handleRateChange} 
+            <div className="flex flex-col">
+              <label className="text-sm text-blue-800 mb-1">Hora de Ingreso</label>
+              <input
+                type="time"
+                value={checkInTime}
+                onChange={(e) => setCheckInTime(e.target.value)}
+                className="border border-blue-400 rounded-md p-2"
               />
-              <span>Tarifa por hora: {hourlyRate}</span>
-            </label>
-            <label className="text-lg text-blue-800 flex items-center space-x-2">
-              <input 
-                type="radio" 
-                name="rate" 
-                value={oneAndHalfHourRate} 
-                className="form-radio text-blue-600" 
-                onChange={handleRateChange} 
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-blue-800 mb-1">Hora de Salida</label>
+              <input
+                type="time"
+                value={checkOutTime}
+                onChange={(e) => setCheckOutTime(e.target.value)}
+                className="border border-blue-400 rounded-md p-2"
               />
-              <span >Tarifa por 1.5 horas: {oneAndHalfHourRate}</span>
-            </label>
-            <label className="text-lg text-blue-800 flex items-center space-x-2">
-              <input 
-                type="radio" 
-                name="rate" 
-                value={threeHourRate} 
-                className="form-radio text-blue-600" 
-                onChange={handleRateChange} 
-              />
-              <span>Tarifa por 3 horas: {threeHourRate}</span>
-            </label>
-            <label className="text-lg text-blue-800 flex items-center space-x-2">
-              <input 
-                type="radio" 
-                name="rate" 
-                value={overnightRate} 
-                className="form-radio text-blue-600" 
-                onChange={handleRateChange} 
-              />
-              <span>Tarifa nocturna: {overnightRate}</span>
-            </label>
-          </div>
-          {/* Mostrar tarifa seleccionada para debug */}
-          <div className="mt-2 text-blue-800 hidden">
-            Tarifa seleccionada: {selectedRateDisplay}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="rateSelect" className="block text-sm font-medium text-gray-700">
+                Seleccione una Tarifa
+              </label>
+              <select
+                id="rateSelect"
+                value={selectedRate}
+                onChange={(e) => {
+                  const rate = parseFloat(e.target.value) || 0;
+                  setSelectedRate(rate);
+                }}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value={0}>Seleccione una tarifa</option>
+                {hourlyRate && <option value={parseMoneyString(hourlyRate)}>Por hora - {hourlyRate}</option>}
+                {oneAndHalfHourRate && <option value={parseMoneyString(oneAndHalfHourRate)}>1.5 horas - {oneAndHalfHourRate}</option>}
+                {threeHourRate && <option value={parseMoneyString(threeHourRate)}>3 horas - {threeHourRate}</option>}
+                {overnightRate && <option value={parseMoneyString(overnightRate)}>Nocturna - {overnightRate}</option>}
+              </select>
+            </div>
           </div>
         </div>
-
         <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-2 w-full overflow-x-auto">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Consumos</h2>
           {rows.map((row, index) => (
@@ -381,14 +392,12 @@ const RoomStatus = () => {
                   onChange={(e) => {
                     const value = e.target.value;
                     handleRowChange(index, "code", value);
-                    // Verificar si el código ingresado coincide con un producto
                     const exactMatch = products.find(product => product.code === value);
                     if (exactMatch) {
                       handleProductSelection(index, exactMatch.code);
                     }
                   }}
                   onBlur={(e) => {
-                    // Verificar si el código ingresado manualmente existe
                     const exactMatch = products.find(product => product.code === e.target.value);
                     if (exactMatch) {
                       handleProductSelection(index, exactMatch.code);
@@ -418,23 +427,19 @@ const RoomStatus = () => {
                 value={row.quantity}
                 onChange={(e) => {
                   const inputValue = e.target.value;
-                  // Permitir valores vacíos y números
                   const quantity = inputValue === "" ? "" : inputValue;
                   handleRowChange(index, "quantity", quantity);
                   
-                  // Recalcular el subtotal solo si hay un valor numérico válido
                   if (row.unitPrice && inputValue !== "" && !isNaN(Number(inputValue))) {
                     const numQuantity = Number(inputValue);
                     const subtotal = calculateSubtotal(numQuantity, row.unitPrice);
                     handleRowChange(index, "subtotal", subtotal);
                   } else if (inputValue === "" || isNaN(Number(inputValue))) {
-                    // Si no hay cantidad válida, limpiar el subtotal
                     handleRowChange(index, "subtotal", "");
                   }
                 }}
                 onBlur={(e) => {
                   const inputValue = e.target.value;
-                  // Al perder el foco, asegurar que haya un valor mínimo de 1
                   if (inputValue === "" || isNaN(Number(inputValue)) || Number(inputValue) < 1) {
                     handleRowChange(index, "quantity", 1);
                     if (row.unitPrice) {
@@ -442,7 +447,6 @@ const RoomStatus = () => {
                       handleRowChange(index, "subtotal", subtotal);
                     }
                   } else {
-                    // Asegurar que sea un número entero
                     const finalQuantity = Math.max(1, Math.floor(Number(inputValue)));
                     handleRowChange(index, "quantity", finalQuantity);
                     if (row.unitPrice) {
@@ -498,10 +502,10 @@ const RoomStatus = () => {
         <div className="col-span-2 md:col-span-1 flex justify-center mt-8">
           <button
           onClick={async () => {
-            await handleRegisterPurchase(); // Registrar la compra
-            await handleUpdateProductQuantity(); // Actualizar el inventario
-            setStatus("desocupado"); // Cambiar el estado de la habitación a desocupado
-            await handleStatusUpdate("desocupado"); // Actualizar el estado en Firebase
+            await handleRegisterPurchase();
+            await handleUpdateProductQuantity();
+            setStatus("desocupado");
+            await handleStatusUpdate("desocupado");
           }}
           className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-32 lg:mr-96"
         >
