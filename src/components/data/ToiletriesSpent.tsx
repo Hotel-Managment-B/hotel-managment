@@ -220,7 +220,7 @@ const ToiletriesSpent = () => {
               onChange={(e) => setNotes(e.target.value)}
             ></textarea>
           </div>
-          <div className="col-span-4 md:col-span-3 lg:col-span-2 mr-18 md:mr-30 lg:mr-64flex justify-center items-center">
+          <div className="col-span-4 md:col-span-3 lg:col-span-2 mr-18 md:mr-30 lg:mr-64 flex justify-center items-center">
             <button
               onClick={async () => {
                 await handleRegisterUsage();
