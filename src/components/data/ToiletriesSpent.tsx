@@ -69,7 +69,8 @@ const ToiletriesSpent = () => {
   };
 
   const handleRegisterUsage = async () => {
-    if (!selectedOption || !quantity || !selectedPiece) {
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement | null;
+    if (!selectedOption || !quantity || !selectedPiece || !dateInput || !dateInput.value) {
       alert("Por favor, complete todos los campos requeridos.");
       return;
     }
@@ -99,8 +100,9 @@ const ToiletriesSpent = () => {
   };
 
   const handleUpdateQuantity = async () => {
-    if (!selectedOption || !quantity) {
-      alert("Por favor, complete los campos requeridos.");
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement | null;
+    if (!selectedOption || !quantity || !selectedPiece || !dateInput || !dateInput.value) {
+      alert("Por favor, complete todos los campos requeridos.");
       return;
     }
 
@@ -140,8 +142,8 @@ const ToiletriesSpent = () => {
        </div>
       <div className="bg-white rounded-3xl border border-blue-400 mt-4 shadow-2xl p-8 m-4">
        
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="mr-0 md:mr-64">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+          <div className="col-span-4 md:col-span-1 mb-4 mr-0 md:mr-4">
             <label className="block text-sm font-medium text-blue-900">
               Fecha
             </label>
@@ -150,7 +152,7 @@ const ToiletriesSpent = () => {
               className="h-8 mt-1 text-center block w-full border rounded-md shadow-sm border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
-          <div className="mb-4 mr-0 md:mr-64">
+          <div className="col-span-4 md:col-span-1 mb-4 mr-0 md:mr-4">
             <label
               htmlFor="optionInput"
               className="block text-sm font-medium text-blue-900"
@@ -172,7 +174,7 @@ const ToiletriesSpent = () => {
             </datalist>
           </div>
 
-          <div className="mb-4 mr-0 md:mr-64">
+          <div className="col-span-4 md:col-span-1 mb-4 mr-0 md:mr-4">
             <label
               htmlFor="quantityInput"
               className="block text-sm font-medium text-blue-900"
@@ -189,7 +191,7 @@ const ToiletriesSpent = () => {
             />
           </div>
 
-          <div className="mb-4 mr-0 md:mr-64">
+          <div className="col-span-4 md:col-span-1 mb-4 mr-0 md:mr-4">
             <label
               htmlFor="pieceSelect"
               className="block text-sm font-medium text-blue-900"
@@ -208,7 +210,7 @@ const ToiletriesSpent = () => {
               ))}
             </select>
           </div>
-          <div>
+          <div className="col-span-4 md:col-span-2">
             <label className="block text-sm font-medium text-blue-900">
               Observaciones
             </label>
@@ -218,7 +220,7 @@ const ToiletriesSpent = () => {
               onChange={(e) => setNotes(e.target.value)}
             ></textarea>
           </div>
-          <div>
+          <div className="col-span-4 md:col-span-3 lg:col-span-2 mr-18 md:mr-30 lg:mr-64flex justify-center items-center">
             <button
               onClick={async () => {
                 await handleRegisterUsage();
