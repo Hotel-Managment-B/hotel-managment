@@ -67,7 +67,7 @@ const ListToiletries = () => {
   );
 
   return (
-    <div className="flex flex-col sm:flex-row items-start min-h-screen mt-2 px-4 gap-4">
+    <div className="flex flex-col sm:flex-row items-start min-h-screen mt-12 px-4 gap-4">
       <div className="sm:w-1/3 w-full">
         <RegisterToiletries onProductAdded={handleProductAdded} />
       </div>
@@ -86,48 +86,53 @@ const ListToiletries = () => {
         ) : filteredToiletries.length === 0 ? (
           <p className="text-blue-700 text-lg">No hay datos para mostrar.</p>
         ) : (
-          <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse border border-blue-400 text-sm sm:text-base">
-              <thead>
-                <tr className="bg-blue-200">
-                  <th className="border border-blue-400 px-4 py-2">Código</th>
-                  <th className="border border-blue-400 px-4 py-2">
-                    Nombre del Producto
-                  </th>
-                  <th className="border border-blue-400 px-4 py-2">Cantidad</th>
-                  <th className="border border-blue-400 px-4 py-2">
-                    Valor de la Compra
-                  </th>
-                  <th className="border border-blue-400 px-4 py-2">Eliminar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredToiletries.map((toiletry) => (
-                  <tr key={toiletry.id} className="text-center">
-                    <td className="border border-blue-400 px-4 py-2">
-                      {toiletry.code}
-                    </td>
-                    <td className="border border-blue-400 px-4 py-2">
-                      {toiletry.name}
-                    </td>
-                    <td className="border border-blue-400 px-4 py-2">
-                      {toiletry.quantity}
-                    </td>
-                    <td className="border border-blue-400 px-4 py-2">
-                      ${toiletry.purchaseValue.toLocaleString("es-ES")}
-                    </td>
-                    <td className="border border-blue-400 px-4 py-2">
-                      <button
-                        onClick={() => handleDelete(toiletry.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
+          <div className="w-full  p-8 space-y-6 bg-white rounded-lg shadow-2xl">
+            <h2 className="text-sm md:text-lg font-bold text-center text-blue-900">
+              Lista de Productos de Aseo
+            </h2>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full border-collapse border border-blue-400 text-sm sm:text-base">
+                <thead>
+                  <tr className="bg-blue-200">
+                    <th className="border border-blue-400 px-4 py-2">Código</th>
+                    <th className="border border-blue-400 px-4 py-2">
+                      Nombre del Producto
+                    </th>
+                    <th className="border border-blue-400 px-4 py-2">Cantidad</th>
+                    <th className="border border-blue-400 px-4 py-2">
+                      Valor de la Compra
+                    </th>
+                    <th className="border border-blue-400 px-4 py-2">Eliminar</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredToiletries.map((toiletry) => (
+                    <tr key={toiletry.id} className="text-center">
+                      <td className="border border-blue-400 px-4 py-2">
+                        {toiletry.code}
+                      </td>
+                      <td className="border border-blue-400 px-4 py-2">
+                        {toiletry.name}
+                      </td>
+                      <td className="border border-blue-400 px-4 py-2">
+                        {toiletry.quantity}
+                      </td>
+                      <td className="border border-blue-400 px-4 py-2">
+                        ${toiletry.purchaseValue.toLocaleString("es-ES")}
+                      </td>
+                      <td className="border border-blue-400 px-4 py-2">
+                        <button
+                          onClick={() => handleDelete(toiletry.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

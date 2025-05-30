@@ -140,10 +140,12 @@ const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="grid grid-cols-1 border-2 border-blue-200 shadow-2xl  p-2 rounded-lg max-w-7xl mt-4">
-        <h1 className="text-lg font-semibold m-4 text-blue-900 ">
-          Compra de Artículos de Aseo
-        </h1>
+      <div className="grid grid-cols-1  shadow-2xl  p-2 rounded-lg max-w-7xl mt-4">
+        <div className="flex justify-center items-center">
+          <h1 className="text-sm md:text-lg font-semibold m-4 text-blue-900 ">
+            Compra de Artículos de Aseo
+          </h1>
+        </div>
         <div className="p-4 bg-white rounded-md max-w-full shadow-2xl border-2 border-blue-200 mt-4 mb-4">
           {rows.map((row, index) => (
             <div

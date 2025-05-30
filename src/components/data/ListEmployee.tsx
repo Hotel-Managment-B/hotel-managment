@@ -88,7 +88,7 @@ const ListEmployee = () => {
       </div>
       <div className="sm:w-2/3 w-full">
         <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg">
-          <h2 className="sm:text-4xl md:text-2xl font-bold text-center text-blue-900">
+          <h2 className="text-sm md:text-lg font-bold text-center text-blue-900">
             Lista de Empleados
           </h2>
           {isLoading ? (

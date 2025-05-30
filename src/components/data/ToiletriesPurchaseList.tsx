@@ -85,7 +85,7 @@ const ToiletriesPurchaseList = () => {
         </div>
         <div className="w-full sm:w-2/3 overflow-x-auto">
           <div className="flex justify-center items-center">
-            <h2 className="text-lg font-bold mb-4 text-center text-blue-900 mt-4">
+            <h2 className="text-sm md:text-lg font-bold mb-4 text-center text-blue-900 mt-4">
               Historial de Compras de Artículos de Aseo
             </h2>
           </div>

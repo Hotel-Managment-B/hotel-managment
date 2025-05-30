@@ -271,7 +271,7 @@ const AddPurchase = () => {
       <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
         Compras Mini Bar
       </h1>
-      <form className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-3 border-2 border-blue-400 rounded-lg p-6 shadow-lg">
+      <form className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-3 border- rounded-lg p-6 shadow-lg">
         <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 col-span-3 w-full overflow-x-auto">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">
             Productos

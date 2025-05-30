@@ -133,10 +133,13 @@ const ToiletriesSpent = () => {
 
   return (
     <>
-      <div className="bg-white rounded-3xl border border-blue-400 mt-4 md:mt-16 shadow-2xl p-8">
-        <h1 className="text-lg font-bold text-blue-900 mb-4">
+    <div className="flex justify-center items-center">
+         <h1 className="text-lg font-bold text-blue-900 mt-4">
           Gastos de Artículos de Aseo
         </h1>
+       </div>
+      <div className="bg-white rounded-3xl border border-blue-400 mt-4 shadow-2xl p-8 m-4">
+       
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="mr-0 md:mr-64">
             <label className="block text-sm font-medium text-blue-900">
@@ -144,7 +147,7 @@ const ToiletriesSpent = () => {
             </label>
             <input
               type="date"
-              className="mt-1 block w-full border rounded-md shadow-sm border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="h-8 mt-1 text-center block w-full border rounded-md shadow-sm border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
           <div className="mb-4 mr-0 md:mr-64">
@@ -159,7 +162,7 @@ const ToiletriesSpent = () => {
               type="text"
               value={selectedOption}
               onChange={handleInputChange}
-              className="mt-1 block w-full border rounded-md shadow-sm  border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="h-8 mt-1 text-center block w-full border rounded-md shadow-sm  border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               list="toiletries-options"
             />
             <datalist id="toiletries-options">
@@ -181,7 +184,7 @@ const ToiletriesSpent = () => {
               type="number"
               value={quantity}
               onChange={handleQuantityChange}
-              className="mt-1 block w-full border rounded-md shadow-sm  border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="h-8 mt-1 text-center block w-full border rounded-md shadow-sm  border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               min="1"
             />
           </div>
@@ -197,7 +200,7 @@ const ToiletriesSpent = () => {
               id="pieceSelect"
               value={selectedPiece}
               onChange={handlePieceChange}
-              className="mt-1 block w-full border rounded-md shadow-sm  border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="h-8 mt-1 text-center block w-full border rounded-md shadow-sm  border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="">Seleccione...</option>
               {rooms.map((roomNumber, index) => (

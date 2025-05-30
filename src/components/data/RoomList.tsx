@@ -72,7 +72,7 @@ const RoomList = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-3xl font-bold text-indigo-800 text-center mt-8 mb-4">
+      <h1 className="text-sm md:text-lg font-bold text-indigo-800 text-center mt-8 mb-4">
         Lista de Habitaciones
       </h1>
       <div className="mb-4">

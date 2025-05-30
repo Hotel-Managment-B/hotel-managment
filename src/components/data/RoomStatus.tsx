@@ -346,7 +346,7 @@ const RoomStatus = () => {
                 type="time"
                 value={checkInTime}
                 onChange={(e) => setCheckInTime(e.target.value)}
-                className="border border-blue-400 rounded-md p-2"
+                className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
               />
             </div>
             <div className="flex flex-col">
@@ -355,11 +355,11 @@ const RoomStatus = () => {
                 type="time"
                 value={checkOutTime}
                 onChange={(e) => setCheckOutTime(e.target.value)}
-                className="border border-blue-400 rounded-md p-2"
+                className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="rateSelect" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="rateSelect" className="block text-sm font-medium text-blue-900">
                 Seleccione una Tarifa
               </label>
               <select
@@ -369,7 +369,7 @@ const RoomStatus = () => {
                   const rate = parseFloat(e.target.value) || 0;
                   setSelectedRate(rate);
                 }}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="h-10 mt-1 block w-full border border-blue-300 rounded-md shadow-sm  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 <option value={0}>Seleccione una tarifa</option>
                 {hourlyRate && <option value={parseMoneyString(hourlyRate)}>Por hora - {hourlyRate}</option>}
@@ -491,7 +491,7 @@ const RoomStatus = () => {
           <h2 className="text-lg font-bold text-blue-700 mb-4">
             Método de Pago
           </h2>
-          <select className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <select className="w-full border border-blue-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
             {bankAccounts.map((account) => (
               <option key={account.id} value={account.id}>
                 {account.accountName}
@@ -509,7 +509,7 @@ const RoomStatus = () => {
           }}
           className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-32 lg:mr-96"
         >
-          Registrar Compra
+          Registrar Servicio
         </button>
         </div>
       </div>

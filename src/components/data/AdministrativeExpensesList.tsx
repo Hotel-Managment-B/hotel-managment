@@ -34,10 +34,10 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
 
   return (
     <>
-    <div className="text-center mt-8">
+    <div className="text-center mt-8 ">
         <h1 className="text-sm md:text-lg font-bold text-blue-800">Historial de Gastos Administrativos</h1>
     </div>
-    <div className="bg-white p-8 shadow-lg rounded-lg">
+    <div className="bg-white p-8 shadow-lg rounded-lg overflow-y-auto max-h-96">
       <table className="table-auto w-full border-collapse border border-gray-300">
         <thead>
           <tr>

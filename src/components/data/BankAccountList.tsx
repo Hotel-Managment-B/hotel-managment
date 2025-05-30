@@ -39,7 +39,7 @@ const BankAccountList = () => {
         <BankAccount />
       </div>
       <div className="sm:w-2/3 w-full">
-        <h2 className="text-3xl font-bold text-center text-blue-900 mb-2">
+        <h2 className="text-sm md:text-lg font-bold text-center text-blue-900 mb-2">
           Cuentas Bancarias
         </h2>
         <div className="w-full overflow-x-auto">

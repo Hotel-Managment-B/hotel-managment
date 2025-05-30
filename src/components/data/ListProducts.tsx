@@ -188,11 +188,11 @@ const ListProducts = () => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-blue-100 bg-opacity-50 pt-22">
+        <div className="fixed inset-0 flex items-center justify-center bg-blue-100 bg-opacity-50 pt-22 overflow-y-auto max-h-screen">
           <div className="bg-blue-100 p-6 rounded-md shadow-md w-full max-w-lg relative">
             <button
               onClick={closeModal}
-              className="mt-4 mb-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="mt-4 ml-8 md:ml-0 mb-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
               Cerrar
             </button>

@@ -46,7 +46,7 @@ const RoomService = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-3xl font-bold text-indigo-800 text-center mt-16 mb-4">Habitaciones</h1>
+      <h1 className="text-sm md:text-lg font-bold text-indigo-800 text-center mt-16 mb-4">Habitaciones</h1>
 
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {rooms.map((room) => (
