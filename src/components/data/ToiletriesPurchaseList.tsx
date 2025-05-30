@@ -80,7 +80,7 @@ const ToiletriesPurchaseList = () => {
   return (
     <div className="p-4 bg-white rounded-md">
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="w-full sm:w-1/3">
+        <div className="w-full sm:w-1/2">
           <ToiletriesPurchase onPurchaseSaved={handlePurchaseSaved} />
         </div>
         <div className="w-full sm:w-2/3 overflow-x-auto">

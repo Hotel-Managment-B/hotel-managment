@@ -53,7 +53,7 @@ const ToiletriesSpentList: React.FC<ToiletriesSpentListProps> = ({
 
   return (
     <>
-      <div className="flex justify-center items-center m-4">
+      <div className="flex justify-center items-center w-full border-2 border-blue-300 bg-gradient-to-b from-blue-100 to-blue-200 rounded-lg shadow-lg">
         <h1 className="text-sm md:text-lg font-bold text-blue-800 mt-4">
           Historial de Gastos de Artículos de Aseo
         </h1>
