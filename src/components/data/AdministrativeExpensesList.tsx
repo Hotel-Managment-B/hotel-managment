@@ -34,7 +34,7 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
 
   return (
     <>
-    <div className="text-center mt-8 ">
+    <div className="text-center mt-8 w-full bg-gradient-to-b from-blue-100 to-blue-200 h-8 rounded-lg shadow-lg">
         <h1 className="text-sm md:text-lg font-bold text-blue-800">Historial de Gastos Administrativos</h1>
     </div>
     <div className="bg-white p-8 shadow-lg rounded-lg overflow-y-auto max-h-96">

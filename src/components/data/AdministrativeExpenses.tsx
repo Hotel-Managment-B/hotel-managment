@@ -107,7 +107,7 @@ const AdministrativeExpenses = () => {
 
   return (
     <>
-      <div className="flex justify-center items-center mt-4">
+      <div className="flex justify-center items-center mt-4 w-full bg-gradient-to-b from-blue-100 to-blue-200 rounded-lg shadow-lg">
         <h1 className="text-sm md:text-lg font-bold text-blue-800">
           Registrar Gastos Administrativos y Otros
         </h1>

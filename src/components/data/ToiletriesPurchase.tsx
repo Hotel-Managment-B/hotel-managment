@@ -140,12 +140,13 @@ const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="grid grid-cols-1  shadow-2xl  p-2 rounded-lg w-full mt-4">
-        <div className="flex justify-center items-center">
-          <h1 className="text-sm md:text-lg font-semibold m-4 text-blue-900 ">
+      <div className="flex justify-center items-center w-full max-w-5xl bg-gradient-to-b from-blue-100 to-blue-200 rounded-lg shadow-lg ">
+          <h1 className="text-sm md:text-lg font-semibold mt-2 text-blue-900 text-center">
             Compra de Artículos de Aseo
           </h1>
         </div>
+      <div className="grid grid-cols-1  shadow-2xl  p-2 rounded-lg w-full">
+        
         <div className="p-4 bg-white rounded-md max-w-full shadow-2xl border-2 border-blue-200 mt-4 mb-4">
           {rows.map((row, index) => (
             <div
@@ -204,12 +205,13 @@ const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved
           </button>
         </div>
         <div className=" shadow-2xl border-2 border-blue-200 p-4 rounded-md mt-4 mb-4">
+          <label htmlFor="account-select" className="block mb-2 font-bold text-blue-900">Seleccione una cuenta</label>
           <select
             value={selectedAccount}
             onChange={(e) => setSelectedAccount(e.target.value)}
             className="p-2 border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md w-full"
           >
-            <option value="">Seleccione una cuenta</option>
+            <option value="">Seleccione....</option>
             {bankAccounts.map((account, idx) => (
               <option key={idx} value={account}>
                 {account}
