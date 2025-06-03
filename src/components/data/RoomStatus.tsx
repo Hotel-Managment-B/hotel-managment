@@ -22,6 +22,17 @@ interface Row {
   subtotal: string;
 }
 
+interface RoomStatusData {
+  checkInTime: string;
+  items: {
+    code: string;
+    description: string;
+    quantity: number;
+    unitPrice: string;
+    subtotal: string;
+  }[];
+}
+
 const RoomStatus = () => {
   const searchParams = useSearchParams();
   const roomNumber = searchParams.get("roomNumber") || "";
@@ -43,6 +54,10 @@ const RoomStatus = () => {
   const [checkOutTime, setCheckOutTime] = useState("");
   const [selectedRate, setSelectedRate] = useState<number>(0); // Inicializar con 0 en lugar de null
   const [totalAmount, setTotalAmount] = useState(0);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [roomStatusData, setRoomStatusData] = useState<RoomStatusData[] | null>(null);
+  const [isRoomStatusActive, setIsRoomStatusActive] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -76,6 +91,38 @@ const RoomStatus = () => {
     };
     fetchBankAccounts();
   }, []);
+
+  // Verificar el estado de roomStatus al montar el componente
+  useEffect(() => {
+    const checkRoomStatus = async () => {
+      try {
+        const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
+        const querySnapshot = await getDocs(roomStatusQuery);
+        setIsRoomStatusActive(!querySnapshot.empty);
+      } catch (error) {
+        console.error("Error al verificar el estado de roomStatus: ", error);
+      }
+    };
+
+    checkRoomStatus();
+  }, [roomNumber]);
+
+  useEffect(() => {
+    const preloadRoomStatusData = async () => {
+      try {
+        const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
+        const querySnapshot = await getDocs(roomStatusQuery);
+        if (!querySnapshot.empty) {
+          const roomStatus = querySnapshot.docs.map(doc => doc.data() as RoomStatusData);
+          setRoomStatusData(roomStatus);
+        }
+      } catch (error) {
+        console.error("Error al precargar los datos de roomStatus: ", error);
+      }
+    };
+
+    preloadRoomStatusData();
+  }, [roomNumber]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStatus(e.target.value);
@@ -298,11 +345,120 @@ const RoomStatus = () => {
     }
   };
 
+  const handleOccupyRoom = async () => {
+    if (status === "ocupado") {
+      alert("La habitación ya está ocupada.");
+      return;
+    }
+
+    try {
+      const roomStatusRef = await addDoc(collection(db, "roomStatus"), {
+        checkInTime: checkInTime || serverTimestamp(),
+        roomNumber: roomNumber,
+        items: rows.map(row => ({
+          code: row.code,
+          description: row.description,
+          quantity: row.quantity,
+          unitPrice: row.unitPrice,
+          subtotal: row.subtotal,
+        })),
+      });
+
+      alert("Habitación ocupada y estado registrado exitosamente.");
+    } catch (error) {
+      console.error("Error al ocupar la habitación: ", error);
+      alert("Hubo un error al ocupar la habitación.");
+    }
+  };
+
+  const fetchRoomStatusData = async () => {
+    try {
+      const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
+      const querySnapshot = await getDocs(roomStatusQuery);
+      if (!querySnapshot.empty) {
+        const roomStatus = querySnapshot.docs.map(doc => doc.data() as RoomStatusData);
+        setRoomStatusData(roomStatus);
+        setIsModalOpen(true);
+      } else {
+        alert("No se encontraron datos de estado para esta habitación.");
+      }
+    } catch (error) {
+      console.error("Error al obtener los datos de estado de la habitación: ", error);
+      alert("Hubo un error al obtener los datos de estado de la habitación.");
+    }
+  };
+
+  const handleRegisterConsumption = () => {
+    if (roomStatusData?.[0]?.items) {
+      setRows(roomStatusData[0].items.map(item => ({
+        code: item.code,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal,
+      })));
+      setCheckInTime(roomStatusData[0].checkInTime || "");
+      setIsModalOpen(false);
+    } else {
+      alert("No hay consumos disponibles para registrar.");
+    }
+  };
+
+  const handleAddConsumptionToRoomStatus = async () => {
+    try {
+      const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
+      const querySnapshot = await getDocs(roomStatusQuery);
+
+      if (!querySnapshot.empty) {
+        const roomStatusDoc = querySnapshot.docs[0];
+        const roomStatusRef = doc(db, "roomStatus", roomStatusDoc.id);
+
+        const updatedItems = [...roomStatusDoc.data().items];
+
+        rows.forEach(row => {
+          const existingItemIndex = updatedItems.findIndex(item => item.code === row.code);
+          if (existingItemIndex !== -1) {
+            updatedItems[existingItemIndex].quantity += row.quantity;
+            updatedItems[existingItemIndex].subtotal = (
+              updatedItems[existingItemIndex].quantity * parseFloat(updatedItems[existingItemIndex].unitPrice)
+            ).toString();
+          } else {
+            updatedItems.push({
+              code: row.code,
+              description: row.description,
+              quantity: row.quantity,
+              unitPrice: row.unitPrice,
+              subtotal: row.subtotal,
+            });
+          }
+        });
+
+        await updateDoc(roomStatusRef, { items: updatedItems });
+        alert("Consumos agregados exitosamente a la colección roomStatus.");
+      } else {
+        alert("No se encontró un estado de habitación para agregar consumos.");
+      }
+    } catch (error) {
+      console.error("Error al agregar consumos a roomStatus: ", error);
+      alert("Hubo un error al agregar consumos a roomStatus.");
+    }
+  };
+
+  const handleOpenModal = () => {
+    if (roomStatusData) {
+      setIsModalOpen(true);
+    } else {
+      alert("No se encontraron datos de estado para esta habitación.");
+    }
+  };
+
   return (
     <div className="bg-white p-8">
-      <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
+      <div>
+        <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4 ">
         Consumo de la Habitación {roomNumber}
-      </h1>   
+      </h1>
+        </div>   
       <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2 rounded-lg p-6 sahdow-lg">
         <div className="flex flex-col items-center bg-white shadow-2xl rounded-lg mr-2 p-6 col-span-2 lg:col-span-1 border-2 border-blue-200">
           <h2 className="text-xl font-semibold text-blue-800 mb-4">Estado de la Habitación</h2>
@@ -499,20 +655,89 @@ const RoomStatus = () => {
             ))}
           </select>
         </div>
-        <div className="col-span-2 md:col-span-1 flex justify-center mt-8">
-          <button
+        <div className="col-span-2 md:col-span-1 flex justify-center items-center ">
+          <div>
+            <button
           onClick={async () => {
             await handleRegisterPurchase();
             await handleUpdateProductQuantity();
             setStatus("desocupado");
             await handleStatusUpdate("desocupado");
           }}
-          className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-32 lg:mr-96"
+          className=" mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12  m-4"
         >
           Registrar Servicio
         </button>
+        <button
+          onClick={handleOccupyRoom}
+          className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 m-4"
+        >
+          Ocupar Habitación
+        </button>
+          </div>
+        <div>
+          {isRoomStatusActive && (
+          <>
+            <button
+              onClick={handleOpenModal}
+              className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-16 lg:mr-12 m-4"
+            >
+              Ver Consumos
+            </button>
+            <button
+              onClick={handleAddConsumptionToRoomStatus}
+              className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-16 lg:mr-12 m-4"
+            >
+              Agregar Consumos
+            </button>
+          </>
+        )}
+        </div>
         </div>
       </div>
+
+      {/* Modal para mostrar los datos de roomStatus */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-blue-50 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-md shadow-md w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto">
+            <h3 className="text-2xl font-bold mb-6">Hora de Ingreso: {roomStatusData?.[0]?.checkInTime || "N/A"}</h3>
+            <table className="table-auto w-full border-collapse border border-gray-300 text-sm sm:text-base">
+              <thead>
+                <tr className="bg-blue-100">
+                  <th className="border border-gray-300 px-4 py-2">Código</th>
+                  <th className="border border-gray-300 px-4 py-2">Descripción</th>
+                  <th className="border border-gray-300 px-4 py-2">Cantidad</th>
+                  <th className="border border-gray-300 px-4 py-2">Valor Unitario</th>
+                  <th className="border border-gray-300 px-4 py-2">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roomStatusData?.[0]?.items.map((item: { code: string; description: string; quantity: number; unitPrice: string; subtotal: string }, index: number) => (
+                  <tr key={index} className="text-center">
+                    <td className="border border-gray-300 px-4 py-2">{item.code}</td>
+                    <td className="border border-gray-300 px-4 py-2">{item.description}</td>
+                    <td className="border border-gray-300 px-4 py-2">{item.quantity}</td>
+                    <td className="border border-gray-300 px-4 py-2">{item.unitPrice}</td>
+                    <td className="border border-gray-300 px-4 py-2">{item.subtotal}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="mt-6 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 mr-4"
+            >
+              Cerrar
+            </button>
+            <button
+              onClick={handleRegisterConsumption}
+              className="mt-6 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+            >
+              Registrar consumo
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
