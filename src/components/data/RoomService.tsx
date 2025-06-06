@@ -54,14 +54,13 @@ const RoomService = () => {
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {rooms.map((room) => (
           <li key={room.id}>
-            <div
-              onClick={() => {
+            <div              onClick={() => {
                 setActiveRoom(room.roomNumber); // Actualizar la habitación activa
                 console.log(
-                  `Navigating to: /room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}`
+                  `Navigating to: /room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}&from=roomservice`
                 );
                 router.push(
-                  `/room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}`
+                  `/room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}&from=roomservice`
                 );
               }}
               className={`cursor-pointer ${

@@ -3,10 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
-import { collection, getDocs, query, where, doc, updateDoc, addDoc, serverTimestamp, increment, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, addDoc, serverTimestamp, increment, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
-
 
 interface Product {
   code: string;
@@ -58,6 +57,7 @@ const RoomStatus = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roomStatusData, setRoomStatusData] = useState<RoomStatusData[] | null>(null);
   const [isRoomStatusActive, setIsRoomStatusActive] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -91,37 +91,95 @@ const RoomStatus = () => {
     };
     fetchBankAccounts();
   }, []);
-
   // Verificar el estado de roomStatus al montar el componente
   useEffect(() => {
-    const checkRoomStatus = async () => {
-      try {
-        const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
-        const querySnapshot = await getDocs(roomStatusQuery);
-        setIsRoomStatusActive(!querySnapshot.empty);
-      } catch (error) {
-        console.error("Error al verificar el estado de roomStatus: ", error);
-      }
-    };
-
     checkRoomStatus();
   }, [roomNumber]);
-
+  // Función para verificar el estado de la habitación
+  const checkRoomStatus = async () => {
+    try {
+      const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
+      const querySnapshot = await getDocs(roomStatusQuery);
+      
+      const hasActiveRoomStatus = !querySnapshot.empty;
+      setIsRoomStatusActive(hasActiveRoomStatus);
+      
+      // Si hay datos en roomStatus, cargarlos también
+      if (hasActiveRoomStatus) {
+        const roomStatusData = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          
+          // Formatear el timestamp a string si existe
+          let formattedCheckInTime = data.checkInTime;
+          if (formattedCheckInTime && typeof formattedCheckInTime !== 'string') {
+            // Si es un timestamp de Firestore, formatearlo a una cadena legible
+            if (formattedCheckInTime.toDate) {
+              const date = formattedCheckInTime.toDate();
+              formattedCheckInTime = date.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+            } else {
+              formattedCheckInTime = 'Formato no reconocido';
+            }
+          }
+          
+          return {
+            ...data,
+            checkInTime: formattedCheckInTime,
+          } as RoomStatusData;
+        });
+        
+        setRoomStatusData(roomStatusData);
+      } else {
+        setRoomStatusData(null);
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado de roomStatus: ", error);
+    }
+  };
   useEffect(() => {
     const preloadRoomStatusData = async () => {
       try {
         const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
         const querySnapshot = await getDocs(roomStatusQuery);
         if (!querySnapshot.empty) {
-          const roomStatus = querySnapshot.docs.map(doc => doc.data() as RoomStatusData);
+          const roomStatus = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            
+            // Formatear el timestamp a string si existe
+            let formattedCheckInTime = data.checkInTime;
+            if (formattedCheckInTime && typeof formattedCheckInTime !== 'string') {
+              // Si es un timestamp de Firestore, formatearlo a una cadena legible
+              if (formattedCheckInTime.toDate) {
+                const date = formattedCheckInTime.toDate();
+                formattedCheckInTime = date.toLocaleString('es-ES', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+              } else {
+                formattedCheckInTime = 'Formato no reconocido';
+              }
+            }
+            
+            return {
+              ...data,
+              checkInTime: formattedCheckInTime,
+            } as RoomStatusData;
+          });
+          
           setRoomStatusData(roomStatus);
         }
       } catch (error) {
         console.error("Error al precargar los datos de roomStatus: ", error);
       }
-    };
-
-    preloadRoomStatusData();
+    };    preloadRoomStatusData();
   }, [roomNumber]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,15 +283,37 @@ const RoomStatus = () => {
       return completePeriods * rate;
     }
   };
-
   const handleCalculateTotal = () => {
-    const consumptionTotal = rows.reduce((sum, row) => sum + parseFloat(row.subtotal || "0"), 0);
-    const hourlyTotal = calculateTotalByHours(checkInTime, checkOutTime, selectedRate);
+    // Calcular total de los consumos
+    const consumptionTotal = rows.reduce((sum, row) => {
+      // Asegurarse de que el subtotal sea un número válido
+      const subtotal = parseFloat(row.subtotal || "0");
+      return isNaN(subtotal) ? sum : sum + subtotal;
+    }, 0);
+    
+    // Calcular total de la tarifa por hora
+    let hourlyTotal = 0;
+    if (checkInTime && checkOutTime && selectedRate > 0) {
+      hourlyTotal = calculateTotalByHours(checkInTime, checkOutTime, selectedRate);
+    }
+    
+    // Establecer el total
     setTotalAmount(consumptionTotal + hourlyTotal);
+    
+    console.log("Cálculo de total:", {
+      consumptionTotal,
+      hourlyTotal,
+      checkInTime,
+      checkOutTime,
+      selectedRate,
+      total: consumptionTotal + hourlyTotal
+    });
   };
-
   useEffect(() => {
-    handleCalculateTotal();
+    // Solo calcular el total si hay datos suficientes
+    if ((checkInTime || checkOutTime || selectedRate > 0) || rows.some(row => row.code && row.subtotal)) {
+      handleCalculateTotal();
+    }
   }, [checkInTime, checkOutTime, selectedRate, rows]);
 
   const handleStatusUpdate = async (newStatus: string) => {
@@ -251,14 +331,15 @@ const RoomStatus = () => {
     } catch (error) {
       console.error("Error al actualizar el estado de la habitación: ", error);
     }
-  };
-
-  const handleRegisterPurchase = async () => {
+  };  const handleRegisterPurchase = async () => {
     try {
+      if (!selectedPaymentMethod) {
+        console.warn("Por favor seleccione un método de pago antes de registrar el servicio.");
+        return false; // Indicar que la operación no fue exitosa
+      }
+
       const roomNumber = searchParams.get("roomNumber") || "";
       const total = formatCurrency(totalAmount); // Usar totalAmount directamente
-      const selectElement = document.querySelector("select");
-      const selectedPaymentMethod = selectElement ? selectElement.options[selectElement.selectedIndex].text : "";
 
       const roomHistoryRef = await addDoc(collection(db, "roomHistory"), {
         date: serverTimestamp(),
@@ -276,42 +357,52 @@ const RoomStatus = () => {
           quantity: row.quantity,
           subtotal: row.subtotal,
         });
-      }
-
-      await updateBankAccountAmount(selectedPaymentMethod, totalAmount);
+      }      await updateBankAccountAmount(selectedPaymentMethod, totalAmount);
 
       // Resetear el componente
       setRows([{ code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" }]);
-      setStatus("desocupado");
       setSelectedRate(0);
       setCheckInTime("");
       setCheckOutTime("");
-      alert("Compra registrada exitosamente y habitación desocupada");
+      return true; // Operación exitosa
     } catch (error) {
       console.error("Error al registrar la compra: ", error);
-      alert("Hubo un error al registrar la compra");
+      return false; // Operación fallida
     }
-  };
+  };  const updateBankAccountAmount = async (accountName: string, total: number) => {
+    if (!accountName || accountName.trim() === "") {
+      console.warn("No se proporcionó un nombre de cuenta bancaria válido");
+      return false; // Indicar que la operación no fue exitosa
+    }
 
-  const updateBankAccountAmount = async (selectedPaymentMethod: string, total: number) => {
     try {
       const bankAccountQuery = query(
         collection(db, "bankAccount"),
-        where("accountName", "==", selectedPaymentMethod)
+        where("accountName", "==", accountName)
       );
       const querySnapshot = await getDocs(bankAccountQuery);
+      
       if (!querySnapshot.empty) {
         const bankAccountDoc = querySnapshot.docs[0];
         const bankAccountRef = doc(db, "bankAccount", bankAccountDoc.id);
+        
+        // Obtener el monto actual para mostrar en el mensaje
+        const bankAccountData = bankAccountDoc.data();
+        const currentAmount = bankAccountData.initialAmount || 0;
+        
         await updateDoc(bankAccountRef, {
           initialAmount: increment(total),
         });
-        console.log("Monto actualizado exitosamente en la cuenta bancaria");
+        
+        console.log(`Monto actualizado exitosamente en la cuenta bancaria ${accountName}. Monto anterior: ${formatCurrency(currentAmount)}, Nuevo monto: ${formatCurrency(currentAmount + total)}`);
+        return true; // Indicar que la operación fue exitosa
       } else {
-        console.warn("No se encontró una cuenta bancaria con el nombre: ", selectedPaymentMethod);
+        console.warn("No se encontró una cuenta bancaria con el nombre: ", accountName);
+        return false; // Indicar que la operación no fue exitosa
       }
     } catch (error) {
       console.error("Error al actualizar el monto de la cuenta bancaria: ", error);
+      return false; // Indicar que la operación no fue exitosa
     }
   };
 
@@ -344,16 +435,24 @@ const RoomStatus = () => {
       alert("Hubo un error al actualizar el inventario");
     }
   };
-
   const handleOccupyRoom = async () => {
     if (status === "ocupado") {
       alert("La habitación ya está ocupada.");
-      return;
-    }
+      return;    }
 
     try {
+      // Si no hay hora de ingreso, usar la hora actual en formato hh:mm
+      let currentCheckInTime = checkInTime;
+      if (!currentCheckInTime) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        currentCheckInTime = `${hours}:${minutes}`;
+        setCheckInTime(currentCheckInTime);
+      }
+      
       const roomStatusRef = await addDoc(collection(db, "roomStatus"), {
-        checkInTime: checkInTime || serverTimestamp(),
+        checkInTime: currentCheckInTime || serverTimestamp(),
         roomNumber: roomNumber,
         items: rows.map(row => ({
           code: row.code,
@@ -362,8 +461,43 @@ const RoomStatus = () => {
           unitPrice: row.unitPrice,
           subtotal: row.subtotal,
         })),
-      });
+      });      // Actualizar el estado para mostrar los botones de consumo
+      setIsRoomStatusActive(true);
+      
+      // Actualizar el estado de la habitación
+      setStatus("ocupado");
+      await handleStatusUpdate("ocupado");
 
+      // Cargar los datos recién creados
+      const roomStatusDoc = await getDoc(roomStatusRef);
+      if (roomStatusDoc.exists()) {
+        // Formatear el timestamp a string si existe
+        const data = roomStatusDoc.data();
+        let formattedCheckInTime = data.checkInTime;
+        
+        if (formattedCheckInTime && typeof formattedCheckInTime !== 'string') {
+          // Si es un timestamp de Firestore, formatearlo a una cadena legible
+          if (formattedCheckInTime.toDate) {
+            const date = formattedCheckInTime.toDate();
+            formattedCheckInTime = date.toLocaleString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          } else {
+            formattedCheckInTime = 'Formato no reconocido';
+          }
+        }
+        
+        setRoomStatusData([{
+          ...data,
+          checkInTime: formattedCheckInTime,
+        } as RoomStatusData]);
+      }
+
+      // Mostrar un mensaje de éxito
       alert("Habitación ocupada y estado registrado exitosamente.");
     } catch (error) {
       console.error("Error al ocupar la habitación: ", error);
@@ -386,25 +520,49 @@ const RoomStatus = () => {
       console.error("Error al obtener los datos de estado de la habitación: ", error);
       alert("Hubo un error al obtener los datos de estado de la habitación.");
     }
-  };
-
-  const handleRegisterConsumption = () => {
+  };  const handleRegisterConsumption = () => {
     if (roomStatusData?.[0]?.items) {
+      // Establecer las filas con los items del roomStatusData
       setRows(roomStatusData[0].items.map(item => ({
         code: item.code,
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         subtotal: item.subtotal,
-      })));
-      setCheckInTime(roomStatusData[0].checkInTime || "");
+      })));      // Extraer y establecer la hora de ingreso desde roomStatusData
+      if (roomStatusData[0]?.checkInTime) {
+        let checkInTimeValue = roomStatusData[0].checkInTime;
+        
+        // Si es un string con formato completo, extraer solo la hora
+        if (typeof checkInTimeValue === 'string' && checkInTimeValue.includes(':')) {
+          // Si tiene formato de fecha completa (dd/mm/yyyy hh:mm), extraer solo la hora
+          const timeParts = checkInTimeValue.split(' ');
+          if (timeParts.length > 1) {
+            checkInTimeValue = timeParts[timeParts.length - 1]; // Tomar la última parte (la hora)
+          }
+          
+          // Asegurar que tenga formato hh:mm
+          const hourMinuteParts = checkInTimeValue.split(':');
+          if (hourMinuteParts.length >= 2) {
+            checkInTimeValue = `${hourMinuteParts[0]}:${hourMinuteParts[1]}`;
+          }
+        }
+        
+        setCheckInTime(checkInTimeValue);
+      }
+      
+      // Establecer la hora actual como hora de salida
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      setCheckOutTime(`${hours}:${minutes}`);
+      
+      // Cerrar el modal
       setIsModalOpen(false);
     } else {
       alert("No hay consumos disponibles para registrar.");
     }
-  };
-
-  const handleAddConsumptionToRoomStatus = async () => {
+  };const handleAddConsumptionToRoomStatus = async () => {
     try {
       const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
       const querySnapshot = await getDocs(roomStatusQuery);
@@ -416,39 +574,94 @@ const RoomStatus = () => {
         const updatedItems = [...roomStatusDoc.data().items];
 
         rows.forEach(row => {
-          const existingItemIndex = updatedItems.findIndex(item => item.code === row.code);
-          if (existingItemIndex !== -1) {
-            updatedItems[existingItemIndex].quantity += row.quantity;
-            updatedItems[existingItemIndex].subtotal = (
-              updatedItems[existingItemIndex].quantity * parseFloat(updatedItems[existingItemIndex].unitPrice)
-            ).toString();
-          } else {
-            updatedItems.push({
-              code: row.code,
-              description: row.description,
-              quantity: row.quantity,
-              unitPrice: row.unitPrice,
-              subtotal: row.subtotal,
-            });
+          // Solo agregar si el código no está vacío
+          if (row.code && row.code.trim() !== "") {
+            const existingItemIndex = updatedItems.findIndex(item => item.code === row.code);
+            if (existingItemIndex !== -1) {
+              updatedItems[existingItemIndex].quantity += Number(row.quantity) || 1;
+              updatedItems[existingItemIndex].subtotal = (
+                updatedItems[existingItemIndex].quantity * parseFloat(updatedItems[existingItemIndex].unitPrice)
+              ).toString();
+            } else {
+              updatedItems.push({
+                code: row.code,
+                description: row.description,
+                quantity: Number(row.quantity) || 1,
+                unitPrice: row.unitPrice,
+                subtotal: row.subtotal,
+              });
+            }
           }
         });
 
         await updateDoc(roomStatusRef, { items: updatedItems });
-        alert("Consumos agregados exitosamente a la colección roomStatus.");
+        
+        // Resetear filas después de agregar consumos
+        setRows([{ code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" }]);
+        
+        // Recargar datos de roomStatus para reflejar los cambios
+        const updatedRoomStatus = await getDoc(roomStatusRef);
+        if (updatedRoomStatus.exists()) {
+          const data = updatedRoomStatus.data();
+          
+          // Formatear el timestamp si existe
+          let formattedCheckInTime = data.checkInTime;
+          if (formattedCheckInTime && typeof formattedCheckInTime !== 'string') {
+            if (formattedCheckInTime.toDate) {
+              const date = formattedCheckInTime.toDate();
+              formattedCheckInTime = date.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+            } else {
+              formattedCheckInTime = 'Formato no reconocido';
+            }
+          }
+          
+          setRoomStatusData([{
+            ...data,
+            checkInTime: formattedCheckInTime,
+          } as RoomStatusData]);
+        }
+        
+        alert("Consumos agregados exitosamente.");
       } else {
         alert("No se encontró un estado de habitación para agregar consumos.");
       }
     } catch (error) {
       console.error("Error al agregar consumos a roomStatus: ", error);
-      alert("Hubo un error al agregar consumos a roomStatus.");
-    }
-  };
-
-  const handleOpenModal = () => {
+      alert("Hubo un error al agregar consumos: " + error);
+    }  };  const handleOpenModal = () => {
     if (roomStatusData) {
       setIsModalOpen(true);
     } else {
       alert("No se encontraron datos de estado para esta habitación.");
+    }
+  };const handleDeleteRoomStatus = async () => {
+    try {
+      const roomStatusQuery = query(collection(db, "roomStatus"), where("roomNumber", "==", roomNumber));
+      const querySnapshot = await getDocs(roomStatusQuery);
+
+      if (!querySnapshot.empty) {
+        const roomStatusDoc = querySnapshot.docs[0];
+        await deleteDoc(doc(db, "roomStatus", roomStatusDoc.id));
+        console.log("Documento roomStatus eliminado correctamente");
+        
+        // Actualizar el estado para reflejar que ya no hay roomStatus activo
+        setIsRoomStatusActive(false);
+        setRoomStatusData(null);
+        
+        return true;
+      } else {
+        console.log("No se encontró un documento roomStatus para eliminar");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error al eliminar el documento roomStatus:", error);
+      return false;
     }
   };
 
@@ -643,26 +856,58 @@ const RoomStatus = () => {
             Agregar Fila
           </button>
         </div>
-          <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 h-32 col-span-2 md:col-span-1 mt-6 mr-0 md:mr-4 flex flex-col justify-between">
-          <h2 className="text-lg font-bold text-blue-700 mb-4">
+          <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 h-32 col-span-2 md:col-span-1 mt-6 mr-0 md:mr-4 flex flex-col justify-between">          <h2 className="text-lg font-bold text-blue-700 mb-4">
             Método de Pago
           </h2>
-          <select className="w-full border border-blue-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <select 
+            className="w-full border border-blue-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={selectedPaymentMethod}
+            onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+          >
+            <option value="">Seleccione un método de pago</option>
             {bankAccounts.map((account) => (
-              <option key={account.id} value={account.id}>
+              <option key={account.id} value={account.accountName}>
                 {account.accountName}
               </option>
             ))}
           </select>
         </div>
-        <div className="col-span-2 md:col-span-1 flex justify-center items-center ">
-          <div>
-            <button
+        <div className="col-span-2 md:col-span-1 flex justify-center items-center ">          <div>            <button 
           onClick={async () => {
-            await handleRegisterPurchase();
-            await handleUpdateProductQuantity();
-            setStatus("desocupado");
-            await handleStatusUpdate("desocupado");
+            try {
+              // Validar que se haya seleccionado un método de pago
+              if (!selectedPaymentMethod) {
+                alert("Por favor seleccione un método de pago antes de registrar el servicio.");
+                return;
+              }
+
+              // Registrar la compra y validar que fue exitoso
+              const purchaseRegistered = await handleRegisterPurchase();
+              if (!purchaseRegistered && purchaseRegistered !== undefined) {
+                console.error("No se pudo registrar la compra");
+                return;
+              }
+
+              // Actualizar las cantidades de productos
+              await handleUpdateProductQuantity();
+              
+              // Eliminar el estado de la habitación
+              await handleDeleteRoomStatus();
+              
+              // Actualizar el estado visual y en la base de datos
+              setStatus("desocupado");
+              await handleStatusUpdate("desocupado");
+              
+              // Actualizar el estado para mostrar u ocultar botones
+              setIsRoomStatusActive(false);
+              setRoomStatusData(null);
+              
+              // Mostrar un solo mensaje de éxito
+              alert("Servicio registrado exitosamente, habitación desocupada");
+            } catch (error) {
+              console.error("Error al registrar el servicio:", error);
+              alert("Error al registrar el servicio: " + error);
+            }
           }}
           className=" mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12  m-4"
         >
@@ -696,11 +941,16 @@ const RoomStatus = () => {
         </div>
       </div>
 
-      {/* Modal para mostrar los datos de roomStatus */}
-      {isModalOpen && (
+      {/* Modal para mostrar los datos de roomStatus */}      {isModalOpen && (
         <div className="fixed inset-0 bg-blue-50 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-md shadow-md w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-6">Hora de Ingreso: {roomStatusData?.[0]?.checkInTime || "N/A"}</h3>
+            <h3 className="text-2xl font-bold mb-6">
+              Hora de Ingreso: {roomStatusData?.[0]?.checkInTime 
+                ? (typeof roomStatusData[0].checkInTime === 'string' 
+                   ? roomStatusData[0].checkInTime 
+                   : 'Timestamp registrado')
+                : "N/A"}
+            </h3>
             <table className="table-auto w-full border-collapse border border-gray-300 text-sm sm:text-base">
               <thead>
                 <tr className="bg-blue-100">
