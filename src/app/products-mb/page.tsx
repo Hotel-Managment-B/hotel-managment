@@ -21,9 +21,9 @@ const ClientWrapper = () => {
   };
 
   return (
-      <div className=" px-4 bg-blue-50">
+      <div className=" px-4 bg-blue-50 h-screen">
       {/* Header Flex Container */}
-      <div className="flex items-center justify-center flex-wrap gap-4 mb-6">
+      <div className="flex items-center justify-center flex-wrap gap-4 mb-6 mt-12 md:mt-0">
         {/* Radio buttons a la izquierda */}
         <div className="flex gap-4 order-1 sm:order-none">
           <label className="flex items-center gap-1 text-blue-800 font-medium">
