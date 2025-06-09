@@ -5,6 +5,7 @@ import { collection, getDocs, doc, updateDoc, getDoc } from "firebase/firestore"
 import { db } from "../../firebase/Index";
 import AddEmployee from "./AddEmployee";
 import { FaTrash, FaEdit } from "react-icons/fa";
+import { formatCurrency } from "../../utils/FormatCurrency";
 
 export interface Employee {
   id: string;
@@ -12,6 +13,7 @@ export interface Employee {
   idNumber: string;
   contactNumber: string;
   email: string;
+  salary?: string; // Añadimos el campo salary como opcional para compatibilidad con registros existentes
 }
 
 const ListEmployee = () => {
@@ -67,6 +69,7 @@ const ListEmployee = () => {
         idNumber: updatedData.idNumber,
         contactNumber: updatedData.contactNumber,
         email: updatedData.email,
+        salary: updatedData.salary || "",
       });
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) => (emp.id === updatedData.id ? updatedData : emp))
@@ -76,45 +79,52 @@ const ListEmployee = () => {
       console.error("Error al actualizar el empleado:", error);
     }
   };
+  // Función para manejar el registro de un nuevo empleado
+  const handleAddEmployee = (newEmployeeData: Employee) => {
+    // Añadimos el nuevo empleado directamente a la lista
+    setEmployees((prevEmployees) => [...prevEmployees, newEmployeeData]);
+  };
 
   return (
     <div className="flex flex-col sm:flex-row items-start min-h-screen mt-6 px-4 gap-4">
       <div className="sm:w-1/3 w-full">
         <AddEmployee
-          onSubmit={(data: Employee) => console.log("Empleado registrado:", data)}
+          onSubmit={handleAddEmployee}
           title="Registrar Empleado"
           buttonText="Registrar Empleado"
         />
       </div>
       <div className="sm:w-2/3 w-full">
-        <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg">
+        <div className="w-full max-w-4xl p-8 space-y-6 bg-white shadow-lg rounded-lg">
           <h2 className="text-sm md:text-lg font-bold text-center text-blue-900">
             Lista de Empleados
           </h2>
           {isLoading ? (
             <p className="text-blue-700 text-lg">Cargando empleados...</p>
           ) : employees.length === 0 ? (
-            <p className="text-blue-700 text-lg">No hay empleados para mostrar.</p>
-          ) : (
+            <p className="text-blue-700 text-lg">No hay empleados para mostrar.</p>) : (
             <div className="w-full overflow-x-auto">
-              <table className="w-full border-collapse border border-blue-400 text-sm sm:text-base">
-                <thead>
-                  <tr className="bg-blue-200">
-                    <th className="border border-blue-400 px-4 py-2">Nombre Completo</th>
-                    <th className="border border-blue-400 px-4 py-2">Cédula</th>
-                    <th className="border border-blue-400 px-4 py-2">Número de Contacto</th>
-                    <th className="border border-blue-400 px-4 py-2">Email</th>
-                    <th className="border border-blue-400 px-4 py-2">Acciones</th>
+              <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+                <thead className="bg-blue-100">
+                  <tr><th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Nombre Completo</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Cédula</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Salario Quincenal</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Número de Contacto</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Email</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {employees.map((employee) => (
-                    <tr key={employee.id} className="text-center">
-                      <td className="border border-blue-400 px-4 py-2">{employee.fullName}</td>
-                      <td className="border border-blue-400 px-4 py-2">{employee.idNumber}</td>
-                      <td className="border border-blue-400 px-4 py-2">{employee.contactNumber}</td>
-                      <td className="border border-blue-400 px-4 py-2">{employee.email}</td>
-                      <td className="border border-blue-400 px-4 py-2">
+                    <tr key={employee.id} className="hover:bg-blue-50 transition-colors">
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{employee.fullName}</td>
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{employee.idNumber}</td>
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">
+                        {employee.salary ? formatCurrency(employee.salary) : "$0"}
+                      </td>
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{employee.contactNumber}</td>
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{employee.email}</td>
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
                         <div className="flex justify-center gap-2">
                           <button
                             onClick={() => handleEdit(employee)}

@@ -64,6 +64,26 @@ const TabMenu = () => {
           </button>
           <button
             onClick={() => {
+              setActiveTab("/lista-empleados");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_W || "/");
+            }}
+            className={getButtonClass("/lista-empleados")}
+          >
+            Lista de Empleados
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/bancos");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_X || "/");
+            }}
+            className={getButtonClass("/bancos")}
+          >
+            Cuentas Bancarias
+          </button>
+          <button
+            onClick={() => {
               setActiveTab("/registrar");
               setIsMenuOpen(false);
               router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_P || "/");
@@ -135,13 +155,33 @@ const TabMenu = () => {
           </button>
           <button
             onClick={() => {
-              setActiveTab("/ayuda");
+              setActiveTab("/historial-servicios");
               setIsMenuOpen(false);
-              router.push("/ayuda");
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_Z || "/");
             }}
-            className={getButtonClass("/ayuda")}
+            className={`${getButtonClass("/historial-servicios")} whitespace-nowrap`}
           >
-            otro
+            Historial de Servicios
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/prestamos-empleados");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_N || "/");
+            }}
+            className={getButtonClass("/prestamos-empleados")}
+          >
+            Prestamos
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/lista-prestamos");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_O || "/");
+            }}
+            className={getButtonClass("/lista-prestamos")}
+          >
+            Lista de Prestamos
           </button>
         </div>
       )}

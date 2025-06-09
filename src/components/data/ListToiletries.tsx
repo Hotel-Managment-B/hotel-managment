@@ -89,38 +89,37 @@ const ListToiletries = () => {
           <div className="w-full  p-8 space-y-6 bg-white rounded-lg shadow-2xl">
             <h2 className="text-sm md:text-lg font-bold text-center text-blue-900">
               Lista de Productos de Aseo
-            </h2>
-            <div className="w-full overflow-x-auto">
-              <table className="w-full border-collapse border border-blue-400 text-sm sm:text-base">
-                <thead>
-                  <tr className="bg-blue-200">
-                    <th className="border border-blue-400 px-4 py-2">Código</th>
-                    <th className="border border-blue-400 px-4 py-2">
+            </h2>            <div className="w-full overflow-x-auto">
+              <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+                <thead className="bg-blue-100">
+                  <tr>
+                    <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Código</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
                       Nombre del Producto
                     </th>
-                    <th className="border border-blue-400 px-4 py-2">Cantidad</th>
-                    <th className="border border-blue-400 px-4 py-2">
+                    <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Cantidad</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">
                       Valor de la Compra
                     </th>
-                    <th className="border border-blue-400 px-4 py-2">Eliminar</th>
+                    <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredToiletries.map((toiletry) => (
-                    <tr key={toiletry.id} className="text-center">
-                      <td className="border border-blue-400 px-4 py-2">
+                    <tr key={toiletry.id} className="hover:bg-blue-50 transition-colors">
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                         {toiletry.code}
                       </td>
-                      <td className="border border-blue-400 px-4 py-2">
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                         {toiletry.name}
                       </td>
-                      <td className="border border-blue-400 px-4 py-2">
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-center">
                         {toiletry.quantity}
                       </td>
-                      <td className="border border-blue-400 px-4 py-2">
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">
                         ${toiletry.purchaseValue.toLocaleString("es-ES")}
                       </td>
-                      <td className="border border-blue-400 px-4 py-2">
+                      <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
                         <button
                           onClick={() => handleDelete(toiletry.id)}
                           className="text-red-600 hover:text-red-800"
