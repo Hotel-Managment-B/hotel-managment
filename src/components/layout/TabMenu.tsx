@@ -70,7 +70,7 @@ const TabMenu = () => {
             }}
             className={getButtonClass("/registrar")}
           >
-            Registrar
+            Registrar Productos
           </button>
           <button
             onClick={() => {
@@ -80,9 +80,9 @@ const TabMenu = () => {
             }}
             className={getButtonClass("/compras")}
           >
-            Compras
+            Compras Productos
           </button>
-          
+
           <button
             onClick={() => {
               setActiveTab("/inventario");
@@ -105,13 +105,33 @@ const TabMenu = () => {
           </button>
           <button
             onClick={() => {
-              setActiveTab("/configuracion");
+              setActiveTab("/gastos");
               setIsMenuOpen(false);
-              router.push("/configuracion");
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_G || "/");
             }}
-            className={getButtonClass("/configuracion")}
+            className={getButtonClass("/gastos")}
           >
-            Configuración
+            Gastos
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/historial de gastos");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_L || "/");
+            }}
+            className={getButtonClass("/historial de gastos")}
+          >
+            Historial de Gastos
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/insumos");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_T || "/");
+            }}
+            className={`${getButtonClass("/insumos")} whitespace-nowrap`}
+          >
+            Insumos Habitaciones
           </button>
           <button
             onClick={() => {
@@ -121,7 +141,7 @@ const TabMenu = () => {
             }}
             className={getButtonClass("/ayuda")}
           >
-            Ayuda
+            otro
           </button>
         </div>
       )}

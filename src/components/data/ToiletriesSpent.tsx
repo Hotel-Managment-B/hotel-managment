@@ -136,8 +136,8 @@ const ToiletriesSpent = () => {
   return (
     <>
     <div className="flex justify-center items-center">
-         <h1 className="text-lg font-bold text-blue-900 mt-4">
-          Gastos de Artículos de Aseo
+         <h1 className="text-lg text-center font-bold text-blue-900 mt-4 w-full bg-gradient-to-b from-blue-100 to-blue-200 p-2 rounded-lg shadow-lg border-2 border-blue-300">
+          Consumo de Artículos de Aseo
         </h1>
        </div>
       <div className="bg-white rounded-3xl border border-blue-400 mt-4 shadow-2xl p-8 m-4">

@@ -34,7 +34,7 @@ export default function ListProductsPage() {
         </div>
 
         {/* Título centrado siempre */}
-        <h2 className="text-3xl font-bold text-blue-900 mx-auto order-0 sm:order-none">
+        <h2 className="text-2xl font-bold text-blue-900 mx-auto order-0 sm:order-none w-full text-center bg-gradient-to-b from-blue-100 to-blue-200 rounded-lg shadow-lg border-2 border-blue-300">
           {selectedOption === "mini-bar" ? "Productos Mini Bar" : "Productos de Aseo"}
         </h2>
       </div>

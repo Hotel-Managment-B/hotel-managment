@@ -22,6 +22,18 @@ const nextConfig =  {
       {
         source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_H || '/habitaciones',
         destination: '/room-data',
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_G || '/gastos',
+        destination: '/Administrative',
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_L || '/historial-gastos',
+        destination: '/administrative-list',
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_T || '/insumos',
+        destination: '/toiletries-spent',
       }
     ];
   },
@@ -49,6 +61,21 @@ const nextConfig =  {
       },
       {
         source: '/room-data',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/Administrative',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/administrative-list',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/toiletries-spent',
         destination: '/404',
         permanent: false,
       }

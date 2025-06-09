@@ -90,7 +90,7 @@ const RegisterToiletries: React.FC<RegisterToiletriesProps> = ({ onProductAdded 
   };
 
   return (
-    <div className="flex flex-col items-center mt-2 px-4">
+    <div className="flex flex-col items-center w-full h-screen mt-2 px-4">
       <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-6 rounded-lg shadow-2xl border-2 border-blue-200 space-y-4">
         <h2 className="text-sm md:text-lg font-bold text-center text-blue-900 mb-2">Registrar Producto de Aseo</h2>
         <div>

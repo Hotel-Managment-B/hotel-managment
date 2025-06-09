@@ -53,7 +53,7 @@ const MiniBarList = () => {
   return (
     <div className="p-4 m-4 bg-white">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 mt-4">
-        <h2 className="text-xl font-bold text-center text-blue-900">Historial de Compras del Mini Bar</h2>
+        <h2 className="text-xl font-bold text-center text-blue-900 bg-gradient-to-b from-blue-100 to-blue-200 w-full max-w-7xl rounded-lg">Historial de Compras del Mini Bar</h2>
         <button
           onClick={() => router.push('/minibar-purchase')}
           className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"

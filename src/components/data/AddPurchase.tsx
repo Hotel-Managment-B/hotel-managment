@@ -267,8 +267,8 @@ const AddPurchase = () => {
   };
 
   return (
-    <div className="bg-white p-8">
-      <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4">
+    <div className="bg-white">
+      <h1 className="text-sm md:text-lg font-bold text-blue-800 text-center mt-14 w-full bg-gradient-to-b from-blue-100 to-blue-200  rounded-lg shadow-lg border-2 border-blue-300">
         Compras Mini Bar
       </h1>
       <form className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-3 border- rounded-lg p-6 shadow-lg">
