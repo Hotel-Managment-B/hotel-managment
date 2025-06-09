@@ -115,6 +115,16 @@ const TabMenu = () => {
           </button>
           <button
             onClick={() => {
+              setActiveTab("/historial de gastos");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_L || "/");
+            }}
+            className={getButtonClass("/historial de gastos")}
+          >
+            Historial de Gastos
+          </button>
+          <button
+            onClick={() => {
               setActiveTab("/insumos");
               setIsMenuOpen(false);
               router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_T || "/");
