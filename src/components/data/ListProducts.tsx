@@ -128,56 +128,56 @@ const ListProducts = () => {
             >
               Registrar Productos
             </button>
-          </div>
-          <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse border border-blue-400 text-sm sm:text-base">
-              <thead>
-                <tr className="bg-blue-200">
-                  <th className="border border-blue-400 px-4 py-2">Fecha</th>
-                  <th className="border border-blue-400 px-4 py-2">Código</th>
-                  <th className="border border-blue-400 px-4 py-2">Nombre del Producto</th>
-                  <th className="border border-blue-400 px-4 py-2">Cantidad</th>
-                  <th className="border border-blue-400 px-4 py-2">Valor Total</th>
-                  <th className="border border-blue-400 px-4 py-2">Valor Unitario de Compra</th>
-                  <th className="border border-blue-400 px-4 py-2">Valor Unitario de Venta</th>
-                  <th className="border border-blue-400 px-4 py-2">Acciones</th>
+          </div>          <div className="w-full overflow-x-auto">            <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+              <thead className="bg-blue-100">
+                <tr>
+                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Fecha</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Código</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Nombre del Producto</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Cantidad</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Valor Total</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Valor Unitario de Compra</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Valor Unitario de Venta</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="text-center">
-                    <td className="border border-blue-400 px-4 py-2">
+                  <tr key={product.id} className="hover:bg-blue-50 transition-colors">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                       {product.date || "N/A"}
                     </td>
-                    <td className="border border-blue-400 px-4 py-2">{product.code}</td>
-                    <td className="border border-blue-400 px-4 py-2">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{product.code}</td>
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                       {product.productName}
                     </td>
-                    <td className="border border-blue-400 px-4 py-2">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-center">
                       {product.quantity}
                     </td>
-                    <td className="border border-blue-400 px-4 py-2">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">
                       ${product.totalValue?.toLocaleString("es-ES")}
                     </td>
-                    <td className="border border-blue-400 px-4 py-2">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">
                       ${product.unitPurchaseValue?.toLocaleString("es-ES")}
                     </td>
-                    <td className="border border-blue-400 px-4 py-2">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">
                       ${product.unitSaleValue?.toLocaleString("es-ES")}
                     </td>
-                    <td className="border border-blue-400 px-4 py-2 flex justify-center gap-2">
-                      <button
-                        className="text-blue-600 hover:text-blue-800"
-                        onClick={() => handleEdit(product)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className="text-red-600 hover:text-red-800"
-                        onClick={() => handleDelete(product.id)}
-                      >
-                        <FaTrash />
-                      </button>
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          className="text-blue-600 hover:text-blue-800"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="text-red-600 hover:text-red-800"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

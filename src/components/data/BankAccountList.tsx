@@ -38,41 +38,40 @@ const BankAccountList = () => {
       <div className="sm:w-1/3 w-full mb-6 sm:mt-0">
         <BankAccount />
       </div>
-      <div className="sm:w-2/3 w-full">
+      <div className="sm:w-2/3 w-full shadow-lg p-4 bg-white rounded-lg">
         <h2 className="text-sm md:text-lg font-bold text-center text-blue-900 mb-2">
           Cuentas Bancarias
         </h2>
         <div className="w-full overflow-x-auto">
-          <table className="w-full border-collapse border border-blue-400 text-sm sm:text-base">
-            <thead>
-              <tr className="bg-blue-200">
-                <th className="border border-blue-400 px-4 py-2">
+          <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+            <thead className="bg-blue-100">
+              <tr>
+                <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
                   Nombre de la Cuenta
                 </th>
-                <th className="border border-blue-400 px-4 py-2">
+                <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
                   Tipo de Cuenta
                 </th>
-                <th className="border border-blue-400 px-4 py-2">
+                <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
                   Número de Cuenta
                 </th>
-                <th className="border border-blue-400 px-4 py-2">
-                  Monto Inicial
+                <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">                  Monto Inicial
                 </th>
               </tr>
             </thead>
             <tbody>
               {accounts.map((account) => (
-                <tr key={account.id} className="text-center">
-                  <td className="border border-blue-400 px-4 py-2">
+                <tr key={account.id} className="hover:bg-blue-50 transition-colors">
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                     {account.accountName}
                   </td>
-                  <td className="border border-blue-400 px-4 py-2">
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                     {account.accountType}
                   </td>
-                  <td className="border border-blue-400 px-4 py-2">
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                     {account.accountNumber}
                   </td>
-                  <td className="border border-blue-400 px-4 py-2">
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">
                     ${account.initialAmount.toLocaleString("es-ES")}
                   </td>
                 </tr>

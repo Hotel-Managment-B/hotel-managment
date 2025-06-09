@@ -50,79 +50,91 @@ const ToiletriesSpentList: React.FC<ToiletriesSpentListProps> = ({
     setIsModalOpen(false);
     setModalContent("");
   };
-
   return (
-    <>
-      <div className="flex justify-center items-center w-full border-2 border-blue-300 bg-gradient-to-b from-blue-100 to-blue-200 rounded-lg shadow-lg">
-        <h1 className="text-sm md:text-lg font-bold text-blue-800 mt-4">
-          Historial de Gastos de Artículos de Aseo
-        </h1>
-      </div>
-      <div className="bg-white p-8 shadow-lg rounded-lg mt-2 overflow-y-auto max-h-96">
-        <table className="table-auto w-full border-collapse border border-gray-300">
-          <thead>
+    <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
+        Historial de Gastos de Artículos de Aseo
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+          <thead className="bg-blue-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 bg-blue-100">
+              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
                 Fecha
               </th>
-              <th className="border border-gray-300 px-4 py-2 bg-blue-100">
+              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
                 Artículo
               </th>
-              <th className="border border-gray-300 px-4 py-2 bg-blue-100">
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">
                 Cantidad
               </th>
-              <th className="border border-gray-300 px-4 py-2 bg-blue-100">
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">
                 Habitación
               </th>
-              <th className="border border-gray-300 px-4 py-2 bg-blue-100">
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">
                 Notas
               </th>
-            </tr>
-          </thead>
+            </tr>          </thead>
           <tbody>
             {spentItems.map((item, index) => (
-              <tr key={index}>
-                <td className="border border-gray-300 px-4 py-2">
-                  {new Date(item.date.seconds * 1000).toLocaleDateString()}
+              <tr key={index} className="hover:bg-blue-50 transition-colors">
+                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
+                  {new Date(item.date.seconds * 1000).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
                   {item.item}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-center">
                   {item.quantity}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-center">
                   Habitación {item.room}
                 </td>
-                <td className="border border-gray-300 px-4 py-2 flex justify-center">
+                <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
                   <button
                     onClick={() => handleOpenModal(item.notes)}
-                    className="bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-700"
+                    className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                   >
                     Ver Notas
                   </button>
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
+          </tbody>        </table>
+      </div>
 
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-blue-50 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg shadow-2xl border border-blue-200">
-              <h2 className="text-xl font-bold mb-4">Notas</h2>
-              <p>{modalContent}</p>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-2xl border-2 border-blue-200 w-11/12 sm:w-2/3 md:w-1/2 max-w-md">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-blue-900">Notas</h3>
               <button
                 onClick={handleCloseModal}
-                className="mt-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Cerrar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-sm text-gray-800 p-3 bg-blue-50 rounded-md">{modalContent}</p>
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleCloseModal}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
               >
                 Cerrar
               </button>
             </div>
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 };
 

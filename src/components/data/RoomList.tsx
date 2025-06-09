@@ -82,28 +82,28 @@ const RoomList = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-64 border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <table className="table-auto w-full border-collapse border border-blue-200">
-        <thead>
-          <tr className="bg-blue-100">
-            <th className="border border-blue-300 px-4 py-2">Número de Habitación</th>
-            <th className="border border-blue-300 px-4 py-2">Tarifa por Hora</th>
-            <th className="border border-blue-300 px-4 py-2">Tarifa por 1.5 Horas</th>
-            <th className="border border-blue-300 px-4 py-2">Tarifa por 3 Horas</th>
-            <th className="border border-blue-300 px-4 py-2">Tarifa de Amanecida</th>
-            <th className="border border-blue-300 px-4 py-2">Editar</th>
-          </tr>
-        </thead>
-        <tbody>
+        />      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+          <thead className="bg-blue-100">
+            <tr>
+              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Número de Habitación</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Tarifa por Hora</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Tarifa por 1.5 Horas</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Tarifa por 3 Horas</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Tarifa de Amanecida</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Editar</th>
+            </tr>
+          </thead>
+            <tbody>
           {filteredRooms.map((room, index) => (
-            <tr key={index} className="text-center">
-              <td className="border border-blue-300 px-4 py-2">{room.roomNumber}</td>
-              <td className="border border-blue-300 px-4 py-2">{room.hourlyRate}</td>
-              <td className="border border-blue-300 px-4 py-2">{room.oneAndHalfHourRate}</td>
-              <td className="border border-blue-300 px-4 py-2">{room.threeHourRate}</td>
-              <td className="border border-blue-300 px-4 py-2">{room.overnightRate}</td>
-              <td className="border border-blue-300 px-4 py-2">
+            <tr key={index} className="hover:bg-blue-50 transition-colors">
+              <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{room.roomNumber}</td>
+              <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{room.hourlyRate}</td>
+              <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{room.oneAndHalfHourRate}</td>
+              <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{room.threeHourRate}</td>
+              <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{room.overnightRate}</td>
+              <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
                 <button
                   onClick={() => handleEditClick(room)}
                   className="text-blue-600 hover:text-blue-800"
@@ -114,7 +114,8 @@ const RoomList = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center">
