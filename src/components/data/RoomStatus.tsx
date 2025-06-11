@@ -1,8 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import {
   collection,
   getDocs,
@@ -18,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
+import Invoice from "./Invoice";
 
 interface Product {
   code: string;
@@ -72,9 +75,12 @@ const RoomStatus = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roomStatusData, setRoomStatusData] = useState<RoomStatusData[] | null>(
     null
-  );
-  const [isRoomStatusActive, setIsRoomStatusActive] = useState(false);
+  );  const [isRoomStatusActive, setIsRoomStatusActive] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  
+  // Estados para PDF
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -914,6 +920,174 @@ const RoomStatus = () => {
     return true;
   };
 
+  // Función para generar número de factura consecutivo
+  const generateInvoiceNumber = async (): Promise<string> => {
+    try {
+      // Buscar el último número de factura
+      const invoiceCounterQuery = query(collection(db, "invoiceCounter"));
+      const querySnapshot = await getDocs(invoiceCounterQuery);
+      
+      let nextNumber = 1;
+      let docId = "";
+      
+      if (!querySnapshot.empty) {
+        const counterDoc = querySnapshot.docs[0];
+        docId = counterDoc.id;
+        const currentNumber = counterDoc.data().lastNumber || 0;
+        nextNumber = currentNumber + 1;
+        
+        // Actualizar el contador
+        await updateDoc(doc(db, "invoiceCounter", docId), {
+          lastNumber: nextNumber
+        });
+      } else {
+        // Crear el documento contador si no existe
+        const newDoc = await addDoc(collection(db, "invoiceCounter"), {
+          lastNumber: nextNumber
+        });
+        docId = newDoc.id;
+      }
+      
+      // Formatear el número con ceros a la izquierda
+      return nextNumber.toString().padStart(6, '0');
+    } catch (error) {
+      console.error("Error generando número de factura:", error);
+      return new Date().getTime().toString();
+    }
+  };
+  // Función para generar PDF
+  const generatePDF = async () => {
+    if (!invoiceRef.current) return;
+
+    try {
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        width: 302, // Ancho para formato tipo post (80mm en px aprox)
+        useCORS: true,
+        allowTaint: true,
+        foreignObjectRendering: false,
+        logging: false,
+        ignoreElements: (element) => {
+          // Ignorar elementos que puedan causar problemas
+          return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        unit: 'mm',
+        format: [80, 200], // Formato tipo post (80mm x 200mm)
+        orientation: 'portrait'
+      });
+
+      const imgWidth = 80;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Descargar el PDF
+      const invoiceNum = invoiceNumber || 'factura';
+      pdf.save(`estado-cuenta-${invoiceNum}-habitacion-${roomNumber}.pdf`);
+      
+      console.log('PDF generado exitosamente');
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      
+      // Intentar método alternativo si el primero falla
+      try {
+        console.log('Intentando método alternativo...');
+        await generatePDFAlternative();
+      } catch (alternativeError) {
+        console.error('Error en método alternativo:', alternativeError);
+        alert('Error al generar el PDF. Los datos se han guardado correctamente.');
+      }
+    }
+  };
+
+  // Método alternativo para generar PDF
+  const generatePDFAlternative = async () => {
+    const pdf = new jsPDF({
+      unit: 'mm',
+      format: [80, 200],
+      orientation: 'portrait'
+    });
+
+    // Generar PDF usando solo texto
+    pdf.setFontSize(14);
+    pdf.text('ESTADO DE CUENTA', 40, 15, { align: 'center' });
+    
+    pdf.setFontSize(8);
+    pdf.text('Este documento NO ES FACTURA', 40, 22, { align: 'center' });
+    pdf.text('DE VENTA NI SU EQUIVALENTE', 40, 26, { align: 'center' });
+
+    let y = 35;
+    pdf.setFontSize(10);
+    
+    pdf.text(`No: ${invoiceNumber}`, 5, y);
+    y += 5;
+    pdf.text(`Habitación: ${roomNumber}`, 5, y);
+    y += 5;
+    pdf.text(`Plan: ${getSelectedPlanName()}`, 5, y);
+    y += 5;
+    pdf.text(`Hora entrada: ${checkInTime}`, 5, y);
+    y += 5;
+    pdf.text(`Hora salida: ${checkOutTime}`, 5, y);
+    y += 10;
+
+    pdf.text('CONCEPTO:', 5, y);
+    y += 8;
+
+    // Agregar items
+    const validItems = rows.filter(row => row.description && row.description.trim() !== '');
+    if (validItems.length > 0) {
+      validItems.forEach((item) => {
+        pdf.setFontSize(8);
+        pdf.text(item.description, 5, y);
+        y += 4;
+        pdf.text(`Cantidad: ${item.quantity}`, 5, y);
+        pdf.text(`${formatCurrency(item.subtotal || 0)}`, 65, y, { align: 'right' });
+        y += 6;
+      });
+    } else {
+      pdf.text('Sin consumos adicionales', 5, y);
+      y += 6;
+    }
+
+    // Total
+    y += 5;
+    pdf.line(5, y, 75, y); // Línea horizontal
+    y += 5;
+    pdf.setFontSize(12);
+    pdf.text('TOTAL:', 5, y);
+    pdf.text(`${formatCurrency(totalAmount)}`, 75, y, { align: 'right' });
+
+    // Footer
+    y += 15;
+    pdf.setFontSize(8);
+    pdf.text('Gracias por su preferencia', 40, y, { align: 'center' });
+    y += 4;
+    pdf.text(new Date().toLocaleString('es-ES'), 40, y, { align: 'center' });
+
+    const invoiceNum = invoiceNumber || 'factura';
+    pdf.save(`estado-cuenta-${invoiceNum}-habitacion-${roomNumber}.pdf`);
+  };
+
+  // Función para obtener el nombre del plan seleccionado
+  const getSelectedPlanName = (): string => {
+    const hourlyRateValue = parseMoneyString(hourlyRate);
+    const oneAndHalfHourRateValue = parseMoneyString(oneAndHalfHourRate);
+    const threeHourRateValue = parseMoneyString(threeHourRate);
+    const overnightRateValue = parseMoneyString(overnightRate);
+
+    if (selectedRate === hourlyRateValue) return `Por hora - ${hourlyRate}`;
+    if (selectedRate === oneAndHalfHourRateValue) return `1.5 horas - ${oneAndHalfHourRate}`;
+    if (selectedRate === threeHourRateValue) return `3 horas - ${threeHourRate}`;
+    if (selectedRate === overnightRateValue) return `Nocturna - ${overnightRate}`;
+    
+    return "Sin plan seleccionado";
+  };
+
   return (
     <div className="bg-white p-8">
       <div>
@@ -1200,8 +1374,7 @@ const RoomStatus = () => {
           {" "}
           <div>
             {" "}
-            <button
-              onClick={async () => {
+            <button              onClick={async () => {
                 try {
                   // Validar que se haya seleccionado un método de pago
                   if (!selectedPaymentMethod) {
@@ -1211,31 +1384,41 @@ const RoomStatus = () => {
                     return;
                   }
 
-                  // Registrar la compra y validar que fue exitoso
-                  const purchaseRegistered = await handleRegisterPurchase();
-                  if (!purchaseRegistered && purchaseRegistered !== undefined) {
-                    console.error("No se pudo registrar la compra");
-                    return;
-                  }
+                  // Generar número de factura
+                  const newInvoiceNumber = await generateInvoiceNumber();
+                  setInvoiceNumber(newInvoiceNumber);
 
-                  // Actualizar las cantidades de productos
-                  await handleUpdateProductQuantity();
+                  // Esperar un momento para que se actualice el estado
+                  setTimeout(async () => {
+                    // Generar PDF
+                    await generatePDF();
 
-                  // Eliminar el estado de la habitación
-                  await handleDeleteRoomStatus();
+                    // Registrar la compra y validar que fue exitoso
+                    const purchaseRegistered = await handleRegisterPurchase();
+                    if (!purchaseRegistered && purchaseRegistered !== undefined) {
+                      console.error("No se pudo registrar la compra");
+                      return;
+                    }
 
-                  // Actualizar el estado visual y en la base de datos
-                  setStatus("desocupado");
-                  await handleStatusUpdate("desocupado");
+                    // Actualizar las cantidades de productos
+                    await handleUpdateProductQuantity();
 
-                  // Actualizar el estado para mostrar u ocultar botones
-                  setIsRoomStatusActive(false);
-                  setRoomStatusData(null);
+                    // Eliminar el estado de la habitación
+                    await handleDeleteRoomStatus();
 
-                  // Mostrar un solo mensaje de éxito
-                  alert(
-                    "Servicio registrado exitosamente, habitación desocupada"
-                  );
+                    // Actualizar el estado visual y en la base de datos
+                    setStatus("desocupado");
+                    await handleStatusUpdate("desocupado");
+
+                    // Actualizar el estado para mostrar u ocultar botones
+                    setIsRoomStatusActive(false);
+                    setRoomStatusData(null);
+
+                    // Mostrar un solo mensaje de éxito
+                    alert(
+                      "Servicio registrado exitosamente, habitación desocupada"
+                    );
+                  }, 100);
                 } catch (error) {
                   console.error("Error al registrar el servicio:", error);
                   alert("Error al registrar el servicio: " + error);
@@ -1342,10 +1525,28 @@ const RoomStatus = () => {
               className="mt-6 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
             >
               Registrar consumo
-            </button>
-          </div>
+            </button>          </div>
         </div>
       )}
+      
+      {/* Componente Invoice oculto para generar PDF */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+        <div ref={invoiceRef}>
+          <Invoice
+            invoiceNumber={invoiceNumber}
+            plan={getSelectedPlanName()}
+            checkInTime={checkInTime}
+            checkOutTime={checkOutTime}
+            items={rows.map(row => ({
+              description: row.description,
+              quantity: row.quantity,
+              subtotal: row.subtotal
+            }))}
+            total={totalAmount}
+            roomNumber={roomNumber}
+          />
+        </div>
+      </div>
     </div>
   );
 };

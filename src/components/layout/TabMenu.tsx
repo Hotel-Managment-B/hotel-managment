@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaSignOutAlt } from "react-icons/fa";
 import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 const TabMenu = () => {
   const router = useRouter();
   const pathname = usePathname(); // Obtener la ruta actual
+  const { user, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("/dashboard");
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // No renderizar el TabMenu en la página de login
-  const shouldRenderTabMenu = pathname !== "/login";
+  // No renderizar el TabMenu en la página de login o si no está autenticado
+  const shouldRenderTabMenu = pathname !== "/login" && isAuthenticated;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -172,8 +174,7 @@ const TabMenu = () => {
             className={getButtonClass("/prestamos-empleados")}
           >
             Prestamos
-          </button>
-          <button
+          </button>          <button
             onClick={() => {
               setActiveTab("/lista-prestamos");
               setIsMenuOpen(false);
@@ -182,6 +183,24 @@ const TabMenu = () => {
             className={getButtonClass("/lista-prestamos")}
           >
             Lista de Prestamos
+          </button>
+          
+          {/* Separator line */}
+          <div className="w-full h-px bg-blue-400 my-2"></div>
+          
+          {/* User info and logout */}
+          <div className="w-full text-sm text-blue-100 mb-2">
+            Conectado como: {user?.email}
+          </div>
+          <button
+            onClick={() => {
+              logout();
+              setIsMenuOpen(false);
+            }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-white bg-red-600 hover:bg-red-700 font-semibold transition-colors duration-200 rounded-md"
+          >
+            <FaSignOutAlt />
+            Cerrar Sesión
           </button>
         </div>
       )}

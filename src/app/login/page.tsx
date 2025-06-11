@@ -1,5 +1,5 @@
-import Login from "@/components/login/Login";
+import NextAuthLogin from "@/components/login/NextAuthLogin";
 
 export default function LoginPage() {
-  return <Login />;
+  return <NextAuthLogin />;
 }
