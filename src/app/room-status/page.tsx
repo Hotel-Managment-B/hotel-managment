@@ -1,5 +1,10 @@
+import { Suspense } from 'react';
 import RoomStatus from "@/components/data/RoomStatus";
 
 export default function RoomStatusPage() {
-  return <RoomStatus />;
+  return (
+    <Suspense fallback={<div>Cargando estado de habitación...</div>}>
+      <RoomStatus />
+    </Suspense>
+  );
 }
