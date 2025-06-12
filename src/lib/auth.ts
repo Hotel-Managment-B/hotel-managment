@@ -75,14 +75,15 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
-  ],
-  session: {
+  ],  session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
     error: "/access-denied",
-  },  callbacks: {
+  },
+  callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
