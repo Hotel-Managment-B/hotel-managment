@@ -56,25 +56,15 @@ const ToiletriesSpentList: React.FC<ToiletriesSpentListProps> = ({
         Historial de Gastos de Artículos de Aseo
       </h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
-          <thead className="bg-blue-100">
+        <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">          <thead className="bg-blue-100">
             <tr>
-              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
-                Fecha
-              </th>
-              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">
-                Artículo
-              </th>
-              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">
-                Cantidad
-              </th>
-              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">
-                Habitación
-              </th>
-              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">
-                Notas
-              </th>
-            </tr>          </thead>
+              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Fecha</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Artículo</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Cantidad</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Habitación</th>
+              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Notas</th>
+            </tr>
+          </thead>
           <tbody>
             {spentItems.map((item, index) => (
               <tr key={index} className="hover:bg-blue-50 transition-colors">
@@ -101,10 +91,10 @@ const ToiletriesSpentList: React.FC<ToiletriesSpentListProps> = ({
                   >
                     Ver Notas
                   </button>
-                </td>
-              </tr>
+                </td>              </tr>
             ))}
-          </tbody>        </table>
+          </tbody>
+        </table>
       </div>
 
       {isModalOpen && (
