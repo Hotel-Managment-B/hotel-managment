@@ -17,7 +17,7 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
     const fetchBankAccounts = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "bankAccount"));
-        const accounts = querySnapshot.docs.map((doc: any) => doc.data().accountName);
+        const accounts = querySnapshot.docs.map((doc) => doc.data().accountName);
         setBankAccounts(accounts);
       } catch (error) {
         console.error("Error al obtener las cuentas bancarias: ", error);

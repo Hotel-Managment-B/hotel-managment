@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import { FixedSizeList as List } from "react-window";
 
 interface AdministrativeExpense {
   date: { seconds: number };
@@ -46,9 +45,8 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
   const [endDay, setEndDay] = useState<string>("");
   const [endMonth, setEndMonth] = useState<string>("");
   const [endYear, setEndYear] = useState<string>("2025"); // Año actual por defecto
-
   // Función para actualizar los gastos mostrados en la página actual
-  const updateDisplayedExpenses = (
+  const updateDisplayedExpenses = useCallback((
     expenses: AdministrativeExpense[],
     page: number
   ) => {
@@ -56,7 +54,7 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
     const endIndex = startIndex + itemsPerPage;
     setDisplayedExpenses(expenses.slice(startIndex, endIndex));
     setTotalPages(Math.ceil(expenses.length / itemsPerPage));
-  };
+  }, [itemsPerPage]);
 
   // Función para cambiar de página
   const changePage = (newPage: number) => {
@@ -319,9 +317,8 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
       } catch (error) {
         console.error("Error al obtener los gastos administrativos:", error);
       }
-    };
-    fetchExpenses();
-  }, [refresh, itemsPerPage]);
+    };    fetchExpenses();
+  }, [refresh, itemsPerPage, updateDisplayedExpenses]);
 
   return (
     <>

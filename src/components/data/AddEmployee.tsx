@@ -8,7 +8,7 @@ import { formatCurrency } from "../../utils/FormatCurrency";
 import { Employee } from "./ListEmployee"; // Importé correctamente la interfaz Employee para resolver el error de tipo
 
 // Extendemos la interfaz Employee para incluir el campo salary
-interface EmployeeWithSalary extends Employee {
+export interface EmployeeWithSalary extends Employee {
   salary?: string;
 }
 

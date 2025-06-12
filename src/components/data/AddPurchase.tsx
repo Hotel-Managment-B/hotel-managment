@@ -6,7 +6,6 @@ import {
   getDocs,
   query,
   where,
-  doc,
   updateDoc,
   addDoc,
   serverTimestamp,
@@ -26,7 +25,7 @@ const AddPurchase = () => {
   ]);
   const [products, setProducts] = useState<Product[]>([]);
   const [bankAccounts, setBankAccounts] = useState<{ id: string; accountName: string }[]>([]);
-  const [selectedRateDisplay, setSelectedRateDisplay] = useState("");
+  const [selectedRateDisplay] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {

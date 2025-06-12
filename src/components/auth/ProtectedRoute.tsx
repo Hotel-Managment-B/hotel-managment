@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
