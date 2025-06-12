@@ -184,6 +184,16 @@ const TabMenu = () => {
           >
             Lista de Prestamos
           </button>
+          <button
+            onClick={() => {
+              setActiveTab("/permisos");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_Y || "/");
+            }}
+            className={getButtonClass("/permisos")}
+          >
+            Permisos
+          </button>
           
           {/* Separator line */}
           <div className="w-full h-px bg-blue-400 my-2"></div>
