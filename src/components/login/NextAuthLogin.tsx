@@ -57,7 +57,7 @@ const NextAuthLogin = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col sm:flex-row">
+    <div className="flex h-screen flex-col sm:flex-row bg-white">
       {/* Contenedor izquierdo con la imagen */}
       <div className="sm:w-1/2 w-full bg-gray-100 flex items-center justify-center relative h-full">
         <img src="/LOGO-VIRGOS-MOTEL_completo.png" alt="Logo Virgos Motel" className="max-w-full h-auto" />
