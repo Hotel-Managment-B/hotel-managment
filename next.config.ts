@@ -58,6 +58,10 @@ const nextConfig =  {
       {
         source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_O || '/prestamos-empleados-lista',
         destination: '/list-loans',
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_Y || '/permisos',
+        destination: '/permissions',
       }
     ];
   },
@@ -130,6 +134,11 @@ const nextConfig =  {
       },
       {
         source: '/list-loans',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/permissions',
         destination: '/404',
         permanent: false,
       },
