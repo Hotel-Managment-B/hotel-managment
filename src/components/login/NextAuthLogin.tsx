@@ -41,12 +41,11 @@ const NextAuthLogin = () => {
       });
 
       if (result?.error) {
-        setErrorMessage("Credenciales inválidas. Por favor, verifica tu correo y contraseña.");
-      } else {
+        setErrorMessage("Credenciales inválidas. Por favor, verifica tu correo y contraseña.");      } else {
         // Get the session to ensure user is authenticated
         const session = await getSession();
         if (session) {
-          router.push("/dashboard");
+          router.push("/inicio");
         }
       }
     } catch (error) {
