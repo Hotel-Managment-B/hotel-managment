@@ -1092,7 +1092,7 @@ const RoomStatus = () => {
     <div className="bg-white p-8">
       <div>
         <h1 className="text-3xl font-bold text-blue-800 text-center mt-8 mb-4 ">
-          Consumo de la Habitación {roomNumber}
+          Consumos de la Habitación {roomNumber}
         </h1>
       </div>
       <div className="w-full space-y-6 px-4 md:px-8 grid sm:grid-cols-1 md:grid-cols-2 rounded-lg p-6 sahdow-lg">
