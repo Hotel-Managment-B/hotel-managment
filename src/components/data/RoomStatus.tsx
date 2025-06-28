@@ -72,6 +72,7 @@ const RoomStatus = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [rateErrorMessage, setRateErrorMessage] = useState(""); // Estado para mensajes de error de tarifa
   const [additionalHourCost, setAdditionalHourCost] = useState<number>(0); // Estado para hora adicional
+  const [additionalHourQuantity, setAdditionalHourQuantity] = useState<number>(0); // Estado para cantidad de horas adicionales
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roomStatusData, setRoomStatusData] = useState<RoomStatusData[] | null>(
@@ -294,6 +295,13 @@ const RoomStatus = () => {
     const numericValue = parseInt(cleanValue) || 0;
     setAdditionalHourCost(numericValue);
   };
+
+  // Función para manejar el cambio en el input de cantidad de horas adicionales
+  const handleAdditionalHourQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseInt(value) || 0;
+    setAdditionalHourQuantity(numericValue);
+  };
   const calculateTotalByHours = (
     checkIn: string,
     checkOut: string,
@@ -358,17 +366,20 @@ const RoomStatus = () => {
     }
 
     // Establecer el total incluyendo hora adicional
-    setTotalAmount(consumptionTotal + hourlyTotal + additionalHourCost);
+    const totalAdditionalHourCost = additionalHourCost * additionalHourQuantity;
+    setTotalAmount(consumptionTotal + hourlyTotal + totalAdditionalHourCost);
 
     console.log("Cálculo de total:", {
       consumptionTotal,
       hourlyTotal,
       additionalHourCost,
+      additionalHourQuantity,
+      totalAdditionalHourCost,
       checkInTime,
       checkOutTime,
       selectedRate,
       validRowsCount: validRows.length,
-      total: consumptionTotal + hourlyTotal + additionalHourCost,
+      total: consumptionTotal + hourlyTotal + totalAdditionalHourCost,
     });
   };
   useEffect(() => {
@@ -380,11 +391,12 @@ const RoomStatus = () => {
       checkOutTime ||
       selectedRate > 0 ||
       additionalHourCost > 0 ||
+      additionalHourQuantity > 0 ||
       hasValidRows
     ) {
       handleCalculateTotal();
     }
-  }, [checkInTime, checkOutTime, selectedRate, additionalHourCost, rows]);
+  }, [checkInTime, checkOutTime, selectedRate, additionalHourCost, additionalHourQuantity, rows]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
@@ -448,6 +460,7 @@ const RoomStatus = () => {
       setCheckInTime("");
       setCheckOutTime("");
       setAdditionalHourCost(0);
+      setAdditionalHourQuantity(0);
       return true; // Operación exitosa
     } catch (error) {
       console.error("Error al registrar la compra: ", error);
@@ -1175,7 +1188,7 @@ const RoomStatus = () => {
           <h2 className="text-xl font-semibold text-blue-800 mb-4">
             Hora de Ingreso y Salida
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="flex flex-col">
               <label className="text-sm text-blue-800 mb-1">
                 Hora de Ingreso
@@ -1259,7 +1272,7 @@ const RoomStatus = () => {
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-blue-800 mb-1">
-                Hora Adicional
+                Valor Hora Adicional
               </label>
               <input
                 type="text"
@@ -1267,6 +1280,30 @@ const RoomStatus = () => {
                 onChange={handleAdditionalHourCostChange}
                 placeholder="$0"
                 className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-blue-800 mb-1">
+                Cantidad Horas Adicionales
+              </label>
+              <input
+                type="number"
+                value={additionalHourQuantity}
+                onChange={handleAdditionalHourQuantityChange}
+                placeholder="0"
+                min="0"
+                className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-blue-800 mb-1">
+                Total Horas Adicionales
+              </label>
+              <input
+                type="text"
+                value={formatCurrency(additionalHourCost * additionalHourQuantity)}
+                readOnly
+                className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 bg-gray-100"
               />
             </div>
           </div>
