@@ -850,6 +850,22 @@ const RoomStatus = () => {
     return totalMinutes;
   };
 
+  // Función para formatear el tiempo en formato legible (horas y minutos)
+  const formatTimeDisplay = (totalMinutes: number): string => {
+    if (totalMinutes === 0) return "0 minutos";
+    
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    if (hours === 0) {
+      return `${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+    } else if (minutes === 0) {
+      return `${hours} hora${hours !== 1 ? 's' : ''}`;
+    } else {
+      return `${hours} hora${hours !== 1 ? 's' : ''} y ${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+    }
+  };
+
   // FUNCIONES COMENTADAS: Restricción de tarifas por tiempo - para uso futuro
   /*
   // Función para determinar qué tarifas están permitidas según el tiempo transcurrido
@@ -1210,6 +1226,13 @@ const RoomStatus = () => {
                 readOnly={true}
                 className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 bg-gray-100"
               />
+              {/* Mostrar tiempo transcurrido debajo del input de hora de salida */}
+              <label className="text-xs text-blue-600 mt-1">
+                {checkInTime && checkOutTime 
+                  ? `Tiempo transcurrido: ${formatTimeDisplay(calculateTotalMinutes(checkInTime, checkOutTime))}`
+                  : "Ingrese ambas horas para ver el tiempo transcurrido"
+                }
+              </label>
             </div>
             <div className="mb-4">
               <label
