@@ -16,7 +16,7 @@ interface InvoiceProps {
   items: InvoiceItem[];
   total: number;
   roomNumber: string;
-  
+  timeInMinutes?: number;
 }
 
 const Invoice: React.FC<InvoiceProps> = ({
@@ -27,6 +27,7 @@ const Invoice: React.FC<InvoiceProps> = ({
   items,
   total,
   roomNumber,
+  timeInMinutes = 0,
 }) => {
   return (
     <div style={{ 
@@ -47,6 +48,18 @@ const Invoice: React.FC<InvoiceProps> = ({
         borderBottom: '1px solid #000000', 
         paddingBottom: '8px' 
       }}>
+        {/* Logo */}
+        <img 
+          src="/LOGO-VIRGOS-MOTEL_completo.png" 
+          alt="Virgos Motel Logo" 
+          style={{ 
+            width: '80px', 
+            height: 'auto', 
+            marginBottom: '8px',
+            display: 'block',
+            margin: '0 auto 8px auto'
+          }}
+        />
         <h1 style={{ 
           fontSize: '18px', 
           fontWeight: 'bold', 
@@ -66,6 +79,10 @@ const Invoice: React.FC<InvoiceProps> = ({
 
       {/* Invoice Details */}
       <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <span style={{ fontWeight: 'bold' }}>Tiempo:</span>
+          <span>{timeInMinutes} minutos</span>
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
           <span style={{ fontWeight: 'bold' }}>No:</span>
           <span>{invoiceNumber}</span>
@@ -133,7 +150,7 @@ const Invoice: React.FC<InvoiceProps> = ({
         fontSize: '10px', 
         color: '#666666' 
       }}>
-        <p style={{ margin: '0 0 4px 0' }}>Gracias por su preferencia</p>
+        <p style={{ margin: '0 0 4px 0' }}>Gracias por su estadía, nos sentimos complacidos por su visita.</p>
         <p style={{ margin: '0' }}>{new Date().toLocaleString('es-ES')}</p>
       </div>
     </div>
