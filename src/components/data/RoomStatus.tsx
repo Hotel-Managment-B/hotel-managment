@@ -71,6 +71,7 @@ const RoomStatus = () => {
   const [selectedRate, setSelectedRate] = useState<number>(0); // Inicializar con 0 en lugar de null
   const [totalAmount, setTotalAmount] = useState(0);
   const [rateErrorMessage, setRateErrorMessage] = useState(""); // Estado para mensajes de error de tarifa
+  const [additionalHourCost, setAdditionalHourCost] = useState<number>(0); // Estado para hora adicional
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roomStatusData, setRoomStatusData] = useState<RoomStatusData[] | null>(
@@ -284,6 +285,15 @@ const RoomStatus = () => {
     const cleanedValue = moneyString.replace(/[$\s.]/g, "").replace(",", ".");
     return parseFloat(cleanedValue) || 0;
   };
+
+  // Función para manejar el cambio en el input de hora adicional
+  const handleAdditionalHourCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Remover caracteres no numéricos excepto puntos y espacios
+    const cleanValue = value.replace(/[^\d]/g, "");
+    const numericValue = parseInt(cleanValue) || 0;
+    setAdditionalHourCost(numericValue);
+  };
   const calculateTotalByHours = (
     checkIn: string,
     checkOut: string,
@@ -329,8 +339,9 @@ const RoomStatus = () => {
     }
   };
   const handleCalculateTotal = () => {
-    // Calcular total de los consumos
-    const consumptionTotal = rows.reduce((sum, row) => {
+    // Calcular total de los consumos - solo considerar filas válidas
+    const validRows = rows.filter((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "");
+    const consumptionTotal = validRows.reduce((sum, row) => {
       // Asegurarse de que el subtotal sea un número válido
       const subtotal = parseFloat(row.subtotal || "0");
       return isNaN(subtotal) ? sum : sum + subtotal;
@@ -346,29 +357,34 @@ const RoomStatus = () => {
       );
     }
 
-    // Establecer el total
-    setTotalAmount(consumptionTotal + hourlyTotal);
+    // Establecer el total incluyendo hora adicional
+    setTotalAmount(consumptionTotal + hourlyTotal + additionalHourCost);
 
     console.log("Cálculo de total:", {
       consumptionTotal,
       hourlyTotal,
+      additionalHourCost,
       checkInTime,
       checkOutTime,
       selectedRate,
-      total: consumptionTotal + hourlyTotal,
+      validRowsCount: validRows.length,
+      total: consumptionTotal + hourlyTotal + additionalHourCost,
     });
   };
   useEffect(() => {
     // Solo calcular el total si hay datos suficientes
+    const hasValidRows = rows.some((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "" && row.subtotal);
+    
     if (
       checkInTime ||
       checkOutTime ||
       selectedRate > 0 ||
-      rows.some((row) => row.code && row.subtotal)
+      additionalHourCost > 0 ||
+      hasValidRows
     ) {
       handleCalculateTotal();
     }
-  }, [checkInTime, checkOutTime, selectedRate, rows]);
+  }, [checkInTime, checkOutTime, selectedRate, additionalHourCost, rows]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
@@ -411,7 +427,9 @@ const RoomStatus = () => {
       });
 
       const detailsRef = collection(roomHistoryRef, "details");
-      for (const row of rows) {
+      const validRows = rows.filter((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "");
+      
+      for (const row of validRows) {
         await addDoc(detailsRef, {
           code: row.code,
           description: row.description,
@@ -429,6 +447,7 @@ const RoomStatus = () => {
       setSelectedRate(0);
       setCheckInTime("");
       setCheckOutTime("");
+      setAdditionalHourCost(0);
       return true; // Operación exitosa
     } catch (error) {
       console.error("Error al registrar la compra: ", error);
@@ -487,32 +506,35 @@ const RoomStatus = () => {
 
   const handleUpdateProductQuantity = async () => {
     try {
-      for (const row of rows) {
-        if (row.code) {
-          const quantityToDeduct =
-            typeof row.quantity === "string"
-              ? parseInt(row.quantity, 10) || 1
-              : row.quantity || 1;
+      const validRows = rows.filter((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "");
+      
+      for (const row of validRows) {
+        const quantityToDeduct =
+          typeof row.quantity === "string"
+            ? parseInt(row.quantity, 10) || 1
+            : row.quantity || 1;
 
-          const productsQuery = query(
-            collection(db, "products"),
-            where("code", "==", row.code)
-          );
-          const querySnapshot = await getDocs(productsQuery);
+        const productsQuery = query(
+          collection(db, "products"),
+          where("code", "==", row.code)
+        );
+        const querySnapshot = await getDocs(productsQuery);
 
-          if (!querySnapshot.empty) {
-            const productDoc = querySnapshot.docs[0];
-            const productRef = doc(db, "products", productDoc.id);
+        if (!querySnapshot.empty) {
+          const productDoc = querySnapshot.docs[0];
+          const productRef = doc(db, "products", productDoc.id);
 
-            await updateDoc(productRef, {
-              quantity: increment(-quantityToDeduct),
-            });
-          } else {
-            console.warn(`Producto con código ${row.code} no encontrado.`);
-          }
+          await updateDoc(productRef, {
+            quantity: increment(-quantityToDeduct),
+          });
+        } else {
+          console.warn(`Producto con código ${row.code} no encontrado.`);
         }
       }
-      alert("Inventario actualizado exitosamente");
+      
+      if (validRows.length > 0) {
+        alert("Inventario actualizado exitosamente");
+      }
     } catch (error) {
       console.error("Error al actualizar el inventario: ", error);
       alert("Hubo un error al actualizar el inventario");
@@ -538,13 +560,15 @@ const RoomStatus = () => {
       const roomStatusRef = await addDoc(collection(db, "roomStatus"), {
         checkInTime: currentCheckInTime || serverTimestamp(),
         roomNumber: roomNumber,
-        items: rows.map((row) => ({
-          code: row.code,
-          description: row.description,
-          quantity: row.quantity,
-          unitPrice: row.unitPrice,
-          subtotal: row.subtotal,
-        })),
+        items: rows
+          .filter((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "")
+          .map((row) => ({
+            code: row.code,
+            description: row.description,
+            quantity: row.quantity,
+            unitPrice: row.unitPrice,
+            subtotal: row.subtotal,
+          })),
       }); // Actualizar el estado para mostrar los botones de consumo
       setIsRoomStatusActive(true);
 
@@ -678,8 +702,8 @@ const RoomStatus = () => {
         const updatedItems = [...roomStatusDoc.data().items];
 
         rows.forEach((row) => {
-          // Solo agregar si el código no está vacío
-          if (row.code && row.code.trim() !== "") {
+          // Solo agregar si el código no está vacío y la descripción también
+          if (row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "") {
             const existingItemIndex = updatedItems.findIndex(
               (item) => item.code === row.code
             );
@@ -813,6 +837,8 @@ const RoomStatus = () => {
     return totalMinutes;
   };
 
+  // FUNCIONES COMENTADAS: Restricción de tarifas por tiempo - para uso futuro
+  /*
   // Función para determinar qué tarifas están permitidas según el tiempo transcurrido
   const getAllowedRates = (totalMinutes: number): {
     hourly: boolean;
@@ -882,8 +908,11 @@ const RoomStatus = () => {
       };
     }
   };
+  */
 
   // Efecto para sugerir automáticamente la tarifa basada en el tiempo transcurrido
+  // COMENTADO: Restricción de tarifas por tiempo - para uso futuro
+  /*
   useEffect(() => {
     if (checkInTime && checkOutTime) {
       const totalMinutes = calculateTotalMinutes(checkInTime, checkOutTime);
@@ -900,7 +929,10 @@ const RoomStatus = () => {
       }
     }
   }, [checkInTime, checkOutTime]);
+  */
 
+  // FUNCIÓN COMENTADA: Verificación de tarifas por tiempo - para uso futuro
+  /*
   // Función para verificar si una tarifa es permitida para un tiempo específico
   const isRateAllowedForTime = (rate: number, totalMinutes: number): boolean => {
     const { hourly, oneAndHalf, threeHour, overnight } = getAllowedRates(
@@ -919,6 +951,7 @@ const RoomStatus = () => {
 
     return true;
   };
+  */
 
   // Función para generar número de factura consecutivo
   const generateInvoiceNumber = async (): Promise<string> => {
@@ -1024,6 +1057,11 @@ const RoomStatus = () => {
     let y = 35;
     pdf.setFontSize(10);
     
+    // Calcular tiempo en minutos
+    const timeInMinutes = calculateTotalMinutes(checkInTime, checkOutTime);
+    
+    pdf.text(`Tiempo: ${timeInMinutes} minutos`, 5, y);
+    y += 5;
     pdf.text(`No: ${invoiceNumber}`, 5, y);
     y += 5;
     pdf.text(`Habitación: ${roomNumber}`, 5, y);
@@ -1137,7 +1175,7 @@ const RoomStatus = () => {
           <h2 className="text-xl font-semibold text-blue-800 mb-4">
             Hora de Ingreso y Salida
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="flex flex-col">
               <label className="text-sm text-blue-800 mb-1">
                 Hora de Ingreso
@@ -1160,7 +1198,8 @@ const RoomStatus = () => {
                 className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 bg-gray-100"
               />
             </div>
-            <div className="mb-4">              <label
+            <div className="mb-4">
+              <label
                 htmlFor="rateSelect"
                 className="block text-sm font-medium text-blue-900"
               >
@@ -1172,6 +1211,8 @@ const RoomStatus = () => {
                 onChange={(e) => {
                   const rate = parseFloat(e.target.value) || 0;
                   
+                  // COMENTADO: Restricción de tarifas por tiempo - para uso futuro
+                  /*
                   // Verificar si la tarifa seleccionada es permitida para el tiempo actual
                   if (checkInTime && checkOutTime) {
                     const totalMinutes = calculateTotalMinutes(checkInTime, checkOutTime);
@@ -1182,8 +1223,9 @@ const RoomStatus = () => {
                       return; // No permitir seleccionar esta tarifa
                     }
                   }
+                  */
                   
-                  // Si llegamos aquí, la tarifa es válida o es la de amanecida
+                  // Permitir seleccionar cualquier tarifa independientemente del tiempo
                   setSelectedRate(rate);
                   setRateErrorMessage("");
                 }}
@@ -1214,6 +1256,18 @@ const RoomStatus = () => {
               {rateErrorMessage && (
                 <p className="mt-1 text-sm text-red-600">{rateErrorMessage}</p>
               )}
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-blue-800 mb-1">
+                Hora Adicional
+              </label>
+              <input
+                type="text"
+                value={formatCurrency(additionalHourCost)}
+                onChange={handleAdditionalHourCostChange}
+                placeholder="$0"
+                className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
+              />
             </div>
           </div>
         </div>
@@ -1504,10 +1558,10 @@ const RoomStatus = () => {
                         {item.quantity}
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        {item.unitPrice}
+                        {formatCurrency(item.unitPrice || 0)}
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        {item.subtotal}
+                        {formatCurrency(item.subtotal || 0)}
                       </td>
                     </tr>
                   )
@@ -1544,6 +1598,7 @@ const RoomStatus = () => {
             }))}
             total={totalAmount}
             roomNumber={roomNumber}
+            timeInMinutes={calculateTotalMinutes(checkInTime, checkOutTime)}
           />
         </div>
       </div>

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
-import { db } from "../../firebase/Index";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { db, auth } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
 import { Employee } from "./ListEmployee"; // Importé correctamente la interfaz Employee para resolver el error de tipo
@@ -79,7 +80,10 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const employeeRef = initialData ? doc(db, "employee", initialData.id) : null;      if (employeeRef) {
+      const employeeRef = initialData ? doc(db, "employee", initialData.id) : null;
+      
+      if (employeeRef) {
+        // Actualizar empleado existente
         const updatedData = {
           fullName: formData.fullName,
           salary: formData.salary,
@@ -92,14 +96,36 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
         await updateDoc(employeeRef, updatedData);
         console.log("Empleado actualizado en Firebase:", updatedData);
       } else {
-        // Guardar el nuevo empleado y obtener la referencia con su ID
-        const docRef = await addDoc(collection(db, "employee"), formData);
+        // Crear nuevo empleado
+        
+        // 1. Primero crear la cuenta de autenticación
+        if (!formData.email || !formData.password) {
+          alert("Email y contraseña son requeridos para crear la cuenta del empleado");
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth, 
+          formData.email, 
+          formData.password
+        );
+        
+        console.log("Cuenta de autenticación creada para:", formData.email);
+
+        // 2. Luego guardar los datos del empleado en Firestore
+        const employeeData = {
+          ...formData,
+          uid: userCredential.user.uid, // Guardar el UID de autenticación
+          createdAt: new Date().toISOString()
+        };
+
+        const docRef = await addDoc(collection(db, "employee"), employeeData);
         console.log("Empleado registrado en Firebase con ID:", docRef.id);
         
         // Crear el objeto de empleado completo con el ID generado
         const newEmployee = {
           id: docRef.id,
-          ...formData,
+          ...employeeData,
         };
         
         // Llamar a onSubmit con el nuevo empleado incluyendo su ID
@@ -117,7 +143,8 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
           password: "",
         });
         setDisplaySalary("");
-          // Salimos para evitar la ejecución del código duplicado abajo
+        
+        alert("Empleado registrado exitosamente. Se ha creado su cuenta de acceso.");
         return;
       }
       
@@ -138,8 +165,22 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
           ...formData,
         });
       }
-    } catch (error) {
-      console.error("Error al registrar o actualizar el empleado en Firebase:", error);
+      
+      alert("Empleado actualizado exitosamente.");
+      
+    } catch (error: any) {
+      console.error("Error al registrar o actualizar el empleado:", error);
+      
+      // Manejar errores específicos de Firebase Auth
+      if (error.code === 'auth/email-already-in-use') {
+        alert("Este email ya está registrado. Por favor usa otro email.");
+      } else if (error.code === 'auth/weak-password') {
+        alert("La contraseña es muy débil. Debe tener al menos 6 caracteres.");
+      } else if (error.code === 'auth/invalid-email') {
+        alert("El formato del email no es válido.");
+      } else {
+        alert("Error al registrar el empleado. Por favor intenta nuevamente.");
+      }
     }
   };
 
@@ -232,7 +273,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-bold text-blue-900">
-              Contraseña
+              Contraseña {!initialData && <span className="text-red-500">*</span>}
             </label>
             <input
               type="password"
@@ -241,8 +282,15 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
               value={formData.password}
               onChange={handleChange}
               className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa la contraseña"
+              placeholder={initialData ? "Dejar vacío para mantener la actual" : "Ingresa la contraseña"}
+              required={!initialData}
+              minLength={6}
             />
+            {!initialData && (
+              <p className="text-xs text-gray-600 mt-1">
+                Mínimo 6 caracteres. Esta será la contraseña para acceder al sistema.
+              </p>
+            )}
           </div>
           <div className="flex justify-center">
             <button
