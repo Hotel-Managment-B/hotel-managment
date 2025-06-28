@@ -837,6 +837,8 @@ const RoomStatus = () => {
     return totalMinutes;
   };
 
+  // FUNCIONES COMENTADAS: Restricción de tarifas por tiempo - para uso futuro
+  /*
   // Función para determinar qué tarifas están permitidas según el tiempo transcurrido
   const getAllowedRates = (totalMinutes: number): {
     hourly: boolean;
@@ -906,8 +908,11 @@ const RoomStatus = () => {
       };
     }
   };
+  */
 
   // Efecto para sugerir automáticamente la tarifa basada en el tiempo transcurrido
+  // COMENTADO: Restricción de tarifas por tiempo - para uso futuro
+  /*
   useEffect(() => {
     if (checkInTime && checkOutTime) {
       const totalMinutes = calculateTotalMinutes(checkInTime, checkOutTime);
@@ -924,7 +929,10 @@ const RoomStatus = () => {
       }
     }
   }, [checkInTime, checkOutTime]);
+  */
 
+  // FUNCIÓN COMENTADA: Verificación de tarifas por tiempo - para uso futuro
+  /*
   // Función para verificar si una tarifa es permitida para un tiempo específico
   const isRateAllowedForTime = (rate: number, totalMinutes: number): boolean => {
     const { hourly, oneAndHalf, threeHour, overnight } = getAllowedRates(
@@ -943,6 +951,7 @@ const RoomStatus = () => {
 
     return true;
   };
+  */
 
   // Función para generar número de factura consecutivo
   const generateInvoiceNumber = async (): Promise<string> => {
@@ -1048,6 +1057,11 @@ const RoomStatus = () => {
     let y = 35;
     pdf.setFontSize(10);
     
+    // Calcular tiempo en minutos
+    const timeInMinutes = calculateTotalMinutes(checkInTime, checkOutTime);
+    
+    pdf.text(`Tiempo: ${timeInMinutes} minutos`, 5, y);
+    y += 5;
     pdf.text(`No: ${invoiceNumber}`, 5, y);
     y += 5;
     pdf.text(`Habitación: ${roomNumber}`, 5, y);
@@ -1197,6 +1211,8 @@ const RoomStatus = () => {
                 onChange={(e) => {
                   const rate = parseFloat(e.target.value) || 0;
                   
+                  // COMENTADO: Restricción de tarifas por tiempo - para uso futuro
+                  /*
                   // Verificar si la tarifa seleccionada es permitida para el tiempo actual
                   if (checkInTime && checkOutTime) {
                     const totalMinutes = calculateTotalMinutes(checkInTime, checkOutTime);
@@ -1207,8 +1223,9 @@ const RoomStatus = () => {
                       return; // No permitir seleccionar esta tarifa
                     }
                   }
+                  */
                   
-                  // Si llegamos aquí, la tarifa es válida o es la de amanecida
+                  // Permitir seleccionar cualquier tarifa independientemente del tiempo
                   setSelectedRate(rate);
                   setRateErrorMessage("");
                 }}
@@ -1541,10 +1558,10 @@ const RoomStatus = () => {
                         {item.quantity}
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        {item.unitPrice}
+                        {formatCurrency(item.unitPrice || 0)}
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        {item.subtotal}
+                        {formatCurrency(item.subtotal || 0)}
                       </td>
                     </tr>
                   )
@@ -1581,6 +1598,7 @@ const RoomStatus = () => {
             }))}
             total={totalAmount}
             roomNumber={roomNumber}
+            timeInMinutes={calculateTotalMinutes(checkInTime, checkOutTime)}
           />
         </div>
       </div>
