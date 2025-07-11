@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import TabMenu from "@/components/layout/TabMenu";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { StockAlertProvider } from "@/components/providers/StockAlertProvider";
 
 export const metadata: Metadata = {
   title: "Hotel Managment System",
@@ -17,8 +18,10 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <AuthProvider>
-          <TabMenu />
-          <div>{children}</div>
+          <StockAlertProvider>
+            <TabMenu />
+            <div>{children}</div>
+          </StockAlertProvider>
         </AuthProvider>
       </body>
     </html>
