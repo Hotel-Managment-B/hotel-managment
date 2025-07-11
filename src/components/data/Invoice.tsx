@@ -17,6 +17,8 @@ interface InvoiceProps {
   total: number;
   roomNumber: string;
   timeInMinutes?: number;
+  additionalHourCost?: number;
+  additionalHourQuantity?: number;
 }
 
 const Invoice: React.FC<InvoiceProps> = ({
@@ -28,6 +30,8 @@ const Invoice: React.FC<InvoiceProps> = ({
   total,
   roomNumber,
   timeInMinutes = 0,
+  additionalHourCost = 0,
+  additionalHourQuantity = 0,
 }) => {
   return (
     <div style={{ 
@@ -53,7 +57,7 @@ const Invoice: React.FC<InvoiceProps> = ({
           src="/LOGO-VIRGOS-MOTEL_completo.png" 
           alt="Virgos Motel Logo" 
           style={{ 
-            width: '80px', 
+            width: '35px', 
             height: 'auto', 
             marginBottom: '8px',
             display: 'block',
@@ -134,6 +138,34 @@ const Invoice: React.FC<InvoiceProps> = ({
           <div style={{ fontSize: '10px', color: '#666666' }}>Sin consumos adicionales</div>
         )}
       </div>
+
+      {/* Additional Hours Section */}
+      {additionalHourQuantity > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <h3 style={{ 
+            fontWeight: 'bold', 
+            marginBottom: '8px', 
+            borderBottom: '1px solid #000000', 
+            paddingBottom: '4px',
+            margin: '0 0 8px 0'
+          }}>
+            HORAS ADICIONALES
+          </h3>
+          <div style={{ marginBottom: '8px', fontSize: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ flex: 1 }}>Horas adicionales</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666666' }}>
+              <span>Cantidad: {additionalHourQuantity}</span>
+              <span>{formatCurrency(additionalHourCost || 0)} c/u</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '4px' }}>
+              <span>Subtotal:</span>
+              <span>{formatCurrency((additionalHourCost || 0) * (additionalHourQuantity || 0))}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Total */}
       <div style={{ borderTop: '1px solid #000000', paddingTop: '8px' }}>
