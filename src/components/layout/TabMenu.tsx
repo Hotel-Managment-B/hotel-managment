@@ -34,11 +34,10 @@ const TabMenu = () => {
   }
 
   const getButtonClass = (path: string) => {
-    return `${
-      activeTab === path
+    return `${activeTab === path
         ? "bg-blue-800 border-t-4 border-l-4 border-r-4 border-blue-800"
         : "bg-blue-600 hover:bg-blue-700"
-    } w-full sm:w-auto px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md`;
+      } w-full sm:w-auto px-4 py-2 text-white font-semibold transition-colors duration-200 rounded-t-md`;
   };
 
   return (
@@ -52,7 +51,7 @@ const TabMenu = () => {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute top-12 left-0 bg-blue-600 text-white flex flex-col items-start p-4 rounded-md shadow-lg"
+          className="absolute top-12 left-0 bg-blue-600 text-white flex flex-col items-start p-4 rounded-md shadow-lg max-h-[80vh] overflow-y-auto"
         >
           <button
             onClick={() => {
@@ -194,10 +193,20 @@ const TabMenu = () => {
           >
             Permisos
           </button>
-          
+          <button
+            onClick={() => {
+              setActiveTab("/factura");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_F || "/");
+            }}
+            className={getButtonClass("/factura")}
+          >
+            Editor de Factura
+          </button>
+
           {/* Separator line */}
           <div className="w-full h-px bg-blue-400 my-2"></div>
-          
+
           {/* User info and logout */}
           <div className="w-full text-sm text-blue-100 mb-2">
             Conectado como: {user?.email}

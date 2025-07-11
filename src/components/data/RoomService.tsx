@@ -65,11 +65,11 @@ const RoomService = () => {
               }}
               className={`cursor-pointer ${
                 activeRoom === room.roomNumber
-                  ? "bg-blue-300"
+                  ? "bg-blue-300 text-blue-800"
                   : room.status === "ocupado"
-                  ? "bg-green-200 text-green-900 hover:bg-green-400"
-                  : "bg-blue-100"
-              } hover:bg-blue-300 text-blue-800 font-semibold rounded-lg shadow-md p-4 text-center transition duration-300`}
+                  ? "bg-red-200 text-red-900 hover:bg-red-400"
+                  : "bg-green-100 text-green-800 hover:bg-green-300"
+              } font-semibold text-lg rounded-lg shadow-md p-4 text-center transition duration-300`}
             >
               Habitación {room.roomNumber}
             </div>

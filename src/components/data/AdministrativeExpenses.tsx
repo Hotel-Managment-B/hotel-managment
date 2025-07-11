@@ -11,6 +11,7 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
   const [value, setValue] = useState("");
   const [bank, setBank] = useState("");
   const [bankAccounts, setBankAccounts] = useState<string[]>([]);
+  const [expenseTypes, setExpenseTypes] = useState<string[]>([]); // Nuevo estado para tipos de gastos
   const [refreshList, setRefreshList] = useState(false);
 
   useEffect(() => {
@@ -23,7 +24,22 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
         console.error("Error al obtener las cuentas bancarias: ", error);
       }
     };
+
+    const fetchExpenseTypes = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "administrativeExpenses"));
+        const types = querySnapshot.docs
+          .map((doc) => doc.data().expenseType)
+          .filter((type) => type && type.trim() !== "") // Filtrar valores vacíos o nulos
+          .filter((type, index, self) => self.indexOf(type) === index); // Eliminar duplicados
+        setExpenseTypes(types);
+      } catch (error) {
+        console.error("Error al obtener los tipos de gastos: ", error);
+      }
+    };
+
     fetchBankAccounts();
+    fetchExpenseTypes();
   }, []);
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value);
@@ -61,6 +77,11 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
         bank,
       });
       alert('Gasto registrado exitosamente.');
+
+      // Actualizar la lista de tipos de gastos si se agregó uno nuevo
+      if (!expenseTypes.includes(expenseType)) {
+        setExpenseTypes([...expenseTypes, expenseType]);
+      }
 
       // Resetear los campos después de registrar
       setDate('');
@@ -144,13 +165,22 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
               >
                 Tipo de Gasto
               </label>
-              <input
-                id="expenseTypeInput"
-                type="text"
-                value={expenseType}
-                onChange={handleExpenseTypeChange}
-                className="h-8 mt-1 block w-full shadow-sm rounded-md border text-center border-blue-300 focus:ring-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+              <div className="relative">
+                <input
+                  id="expenseTypeInput"
+                  type="text"
+                  value={expenseType}
+                  onChange={handleExpenseTypeChange}
+                  list="expenseTypesList"
+                  placeholder="Escriba o seleccione un tipo de gasto"
+                  className="h-8 mt-1 block w-full shadow-sm rounded-md border text-center border-blue-300 focus:ring-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <datalist id="expenseTypesList">
+                  {expenseTypes.map((type, index) => (
+                    <option key={index} value={type} />
+                  ))}
+                </datalist>
+              </div>
             </div>
 
             <div className="mb-4">

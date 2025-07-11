@@ -68,6 +68,7 @@ const RoomStatus = () => {
   // Estados simplificados para las tarifas
   const [checkInTime, setCheckInTime] = useState("");
   const [checkOutTime, setCheckOutTime] = useState("");
+  const [currentTime, setCurrentTime] = useState(""); // Para mostrar el tiempo actual
   const [selectedRate, setSelectedRate] = useState<number>(0); // Inicializar con 0 en lugar de null
   const [totalAmount, setTotalAmount] = useState(0);
   const [rateErrorMessage, setRateErrorMessage] = useState(""); // Estado para mensajes de error de tarifa
@@ -79,6 +80,7 @@ const RoomStatus = () => {
     null
   );  const [isRoomStatusActive, setIsRoomStatusActive] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [hasViewedConsumptions, setHasViewedConsumptions] = useState(false);
   
   // Estados para PDF
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -120,6 +122,24 @@ const RoomStatus = () => {
   useEffect(() => {
     checkRoomStatus();
   }, [roomNumber]);
+
+  // Actualizar tiempo actual cada minuto para mostrar tiempo transcurrido en tiempo real
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      setCurrentTime(`${hours}:${minutes}`);
+    };
+
+    // Actualizar inmediatamente
+    updateCurrentTime();
+
+    // Actualizar cada minuto
+    const interval = setInterval(updateCurrentTime, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
   // Función para verificar el estado de la habitación
   const checkRoomStatus = async () => {
     try {
@@ -165,8 +185,29 @@ const RoomStatus = () => {
         });
 
         setRoomStatusData(roomStatusData);
+        
+        // Establecer la hora de entrada desde los datos de roomStatus
+        if (roomStatusData[0]?.checkInTime) {
+          let checkInTimeValue = roomStatusData[0].checkInTime;
+          
+          // Si es un string con formato completo, extraer solo la hora
+          if (typeof checkInTimeValue === "string" && checkInTimeValue.includes(":")) {
+            const timeParts = checkInTimeValue.split(" ");
+            if (timeParts.length > 1) {
+              checkInTimeValue = timeParts[timeParts.length - 1];
+            }
+            
+            const hourMinuteParts = checkInTimeValue.split(":");
+            if (hourMinuteParts.length >= 2) {
+              checkInTimeValue = `${hourMinuteParts[0]}:${hourMinuteParts[1]}`;
+            }
+          }
+          
+          setCheckInTime(checkInTimeValue);
+        }
       } else {
         setRoomStatusData(null);
+        setCheckInTime(""); // Limpiar hora de entrada si no hay habitación ocupada
       }
     } catch (error) {
       console.error("Error al verificar el estado de roomStatus: ", error);
@@ -212,6 +253,26 @@ const RoomStatus = () => {
           });
 
           setRoomStatusData(roomStatus);
+          
+          // Establecer la hora de entrada desde los datos precargados
+          if (roomStatus[0]?.checkInTime) {
+            let checkInTimeValue = roomStatus[0].checkInTime;
+            
+            // Si es un string con formato completo, extraer solo la hora
+            if (typeof checkInTimeValue === "string" && checkInTimeValue.includes(":")) {
+              const timeParts = checkInTimeValue.split(" ");
+              if (timeParts.length > 1) {
+                checkInTimeValue = timeParts[timeParts.length - 1];
+              }
+              
+              const hourMinuteParts = checkInTimeValue.split(":");
+              if (hourMinuteParts.length >= 2) {
+                checkInTimeValue = `${hourMinuteParts[0]}:${hourMinuteParts[1]}`;
+              }
+            }
+            
+            setCheckInTime(checkInTimeValue);
+          }
         }
       } catch (error) {
         console.error("Error al precargar los datos de roomStatus: ", error);
@@ -357,12 +418,12 @@ const RoomStatus = () => {
 
     // Calcular total de la tarifa por hora
     let hourlyTotal = 0;
-    if (checkInTime && checkOutTime && selectedRate > 0) {
-      hourlyTotal = calculateTotalByHours(
-        checkInTime,
-        checkOutTime,
-        selectedRate
-      );
+    if (checkInTime && selectedRate > 0) {
+      // Usar checkOutTime si está establecido, sino usar currentTime para tiempo en tiempo real
+      const endTime = checkOutTime || currentTime;
+      if (endTime) {
+        hourlyTotal = calculateTotalByHours(checkInTime, endTime, selectedRate);
+      }
     }
 
     // Establecer el total incluyendo hora adicional
@@ -389,6 +450,7 @@ const RoomStatus = () => {
     if (
       checkInTime ||
       checkOutTime ||
+      currentTime ||
       selectedRate > 0 ||
       additionalHourCost > 0 ||
       additionalHourQuantity > 0 ||
@@ -396,7 +458,7 @@ const RoomStatus = () => {
     ) {
       handleCalculateTotal();
     }
-  }, [checkInTime, checkOutTime, selectedRate, additionalHourCost, additionalHourQuantity, rows]);
+  }, [checkInTime, checkOutTime, currentTime, selectedRate, additionalHourCost, additionalHourQuantity, rows]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
@@ -405,18 +467,28 @@ const RoomStatus = () => {
         where("roomNumber", "==", roomNumber)
       );
       const querySnapshot = await getDocs(roomsQuery);
+      
       if (!querySnapshot.empty) {
         const roomDoc = querySnapshot.docs[0];
         const roomDocRef = doc(db, "roomsData", roomDoc.id);
+        
+        // Actualizar el estado en Firebase
         await updateDoc(roomDocRef, { status: newStatus });
+        
+        // Actualizar el estado local después de confirmar la actualización en Firebase
         setStatus(newStatus);
+        
+        console.log(`Estado de habitación ${roomNumber} actualizado a: ${newStatus}`);
+        return true;
       } else {
         console.error(
           "No se encontró un documento con el número de habitación especificado."
         );
+        return false;
       }
     } catch (error) {
       console.error("Error al actualizar el estado de la habitación: ", error);
+      return false;
     }
   };
   const handleRegisterPurchase = async () => {
@@ -441,8 +513,22 @@ const RoomStatus = () => {
       const detailsRef = collection(roomHistoryRef, "details");
       const validRows = rows.filter((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "");
       
+      // Agregar información de servicio de habitación (hora, tarifa, etc.)
+      await addDoc(detailsRef, {
+        type: "serviceInfo", // Tipo para identificar este registro
+        checkInTime: checkInTime,
+        checkOutTime: checkOutTime,
+        selectedRate: selectedRate,
+        additionalHourCost: additionalHourCost,
+        additionalHourQuantity: additionalHourQuantity,
+        totalAdditionalHourCost: additionalHourCost * additionalHourQuantity,
+        planName: getSelectedPlanName(), // Nombre del plan seleccionado
+      });
+      
+      // Agregar productos consumidos
       for (const row of validRows) {
         await addDoc(detailsRef, {
+          type: "product", // Tipo para identificar este registro
           code: row.code,
           description: row.description,
           unitPrice: row.unitPrice,
@@ -452,7 +538,7 @@ const RoomStatus = () => {
       }
       await updateBankAccountAmount(selectedPaymentMethod, totalAmount);
 
-      // Resetear el componente
+      // Resetear TODOS los valores del componente
       setRows([
         { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
       ]);
@@ -461,6 +547,7 @@ const RoomStatus = () => {
       setCheckOutTime("");
       setAdditionalHourCost(0);
       setAdditionalHourQuantity(0);
+      setTotalAmount(0);
       return true; // Operación exitosa
     } catch (error) {
       console.error("Error al registrar la compra: ", error);
@@ -584,10 +671,18 @@ const RoomStatus = () => {
           })),
       }); // Actualizar el estado para mostrar los botones de consumo
       setIsRoomStatusActive(true);
+      
+      // Resetear el estado de consumos vistos cuando se ocupa una nueva habitación
+      setHasViewedConsumptions(false);
 
-      // Actualizar el estado de la habitación
-      setStatus("ocupado");
-      await handleStatusUpdate("ocupado");
+      // IMPORTANTE: Actualizar el estado en Firebase PRIMERO
+      const statusUpdated = await handleStatusUpdate("ocupado");
+      
+      if (!statusUpdated) {
+        console.error("No se pudo actualizar el estado de la habitación");
+        alert("Error al actualizar el estado de la habitación");
+        return;
+      }
 
       // Cargar los datos recién creados
       const roomStatusDoc = await getDoc(roomStatusRef);
@@ -663,36 +758,17 @@ const RoomStatus = () => {
           unitPrice: item.unitPrice,
           subtotal: item.subtotal,
         }))
-      ); // Extraer y establecer la hora de ingreso desde roomStatusData
-      if (roomStatusData[0]?.checkInTime) {
-        let checkInTimeValue = roomStatusData[0].checkInTime;
-
-        // Si es un string con formato completo, extraer solo la hora
-        if (
-          typeof checkInTimeValue === "string" &&
-          checkInTimeValue.includes(":")
-        ) {
-          // Si tiene formato de fecha completa (dd/mm/yyyy hh:mm), extraer solo la hora
-          const timeParts = checkInTimeValue.split(" ");
-          if (timeParts.length > 1) {
-            checkInTimeValue = timeParts[timeParts.length - 1]; // Tomar la última parte (la hora)
-          }
-
-          // Asegurar que tenga formato hh:mm
-          const hourMinuteParts = checkInTimeValue.split(":");
-          if (hourMinuteParts.length >= 2) {
-            checkInTimeValue = `${hourMinuteParts[0]}:${hourMinuteParts[1]}`;
-          }
-        }
-
-        setCheckInTime(checkInTimeValue);
-      }
-
-      // Establecer la hora actual como hora de salida
+      ); 
+      
+      // La hora de entrada ya está establecida, no la sobrescribimos
+      // Solo establecemos la hora de salida como la hora actual
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, "0");
       const minutes = String(now.getMinutes()).padStart(2, "0");
       setCheckOutTime(`${hours}:${minutes}`);
+
+      // Marcar que se han visto y registrado los consumos
+      setHasViewedConsumptions(true);
 
       // Cerrar el modal
       setIsModalOpen(false);
@@ -1121,6 +1197,22 @@ const RoomStatus = () => {
       y += 6;
     }
 
+    // Agregar horas adicionales si existen
+    if (additionalHourQuantity > 0) {
+      y += 3;
+      pdf.text('HORAS ADICIONALES:', 5, y);
+      y += 6;
+      pdf.setFontSize(8);
+      pdf.text('Horas adicionales', 5, y);
+      y += 4;
+      pdf.text(`Cantidad: ${additionalHourQuantity}`, 5, y);
+      pdf.text(`${formatCurrency(additionalHourCost)} c/u`, 65, y, { align: 'right' });
+      y += 4;
+      pdf.text('Subtotal:', 5, y);
+      pdf.text(`${formatCurrency(additionalHourCost * additionalHourQuantity)}`, 65, y, { align: 'right' });
+      y += 6;
+    }
+
     // Total
     y += 5;
     pdf.line(5, y, 75, y); // Línea horizontal
@@ -1174,8 +1266,9 @@ const RoomStatus = () => {
                 name="roomStatus"
                 value="ocupado"
                 checked={status === "ocupado"}
-                onChange={() => handleStatusUpdate("ocupado")}
-                className="form-radio text-blue-600"
+                readOnly
+                disabled
+                className="form-radio text-blue-600 cursor-not-allowed"
               />
               <span className="text-blue-800 font-medium">Ocupado</span>
             </label>
@@ -1185,8 +1278,9 @@ const RoomStatus = () => {
                 name="roomStatus"
                 value="desocupado"
                 checked={status === "desocupado"}
-                onChange={() => handleStatusUpdate("desocupado")}
-                className="form-radio text-blue-600"
+                readOnly
+                disabled
+                className="form-radio text-blue-600 cursor-not-allowed"
               />
               <span className="text-blue-800 font-medium">Desocupado</span>
             </label>
@@ -1226,11 +1320,13 @@ const RoomStatus = () => {
                 readOnly={true}
                 className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 bg-gray-100"
               />
-              {/* Mostrar tiempo transcurrido debajo del input de hora de salida */}
+              {/* Mostrar tiempo transcurrido en tiempo real */}
               <label className="text-xs text-blue-600 mt-1">
-                {checkInTime && checkOutTime 
+                {checkInTime && currentTime
+                  ? `Tiempo transcurrido: ${formatTimeDisplay(calculateTotalMinutes(checkInTime, currentTime))}`
+                  : checkInTime && checkOutTime
                   ? `Tiempo transcurrido: ${formatTimeDisplay(calculateTotalMinutes(checkInTime, checkOutTime))}`
-                  : "Ingrese ambas horas para ver el tiempo transcurrido"
+                  : "Ingrese las horas para ver el tiempo transcurrido"
                 }
               </label>
             </div>
@@ -1498,6 +1594,14 @@ const RoomStatus = () => {
                     return;
                   }
 
+                  // Validar que se hayan visto los consumos antes de registrar el servicio
+                  if (isRoomStatusActive && !hasViewedConsumptions) {
+                    alert(
+                      "Debe hacer clic en 'Ver Consumos' y luego en 'Registrar consumo' antes de cerrar la cuenta."
+                    );
+                    return;
+                  }
+
                   // Generar número de factura
                   const newInvoiceNumber = await generateInvoiceNumber();
                   setInvoiceNumber(newInvoiceNumber);
@@ -1520,17 +1624,33 @@ const RoomStatus = () => {
                     // Eliminar el estado de la habitación
                     await handleDeleteRoomStatus();
 
-                    // Actualizar el estado visual y en la base de datos
-                    setStatus("desocupado");
-                    await handleStatusUpdate("desocupado");
+                    // IMPORTANTE: Actualizar el estado en Firebase PRIMERO y verificar que fue exitoso
+                    const statusUpdated = await handleStatusUpdate("desocupado");
+                    
+                    if (!statusUpdated) {
+                      console.error("No se pudo actualizar el estado de la habitación");
+                      alert("Error al actualizar el estado de la habitación");
+                      return;
+                    }
+                    
+                    console.log("Estado actualizado exitosamente a: desocupado");
 
                     // Actualizar el estado para mostrar u ocultar botones
                     setIsRoomStatusActive(false);
                     setRoomStatusData(null);
+                    
+                    // Resetear TODOS los estados de consumos vistos
+                    setHasViewedConsumptions(false);
+                    
+                    // Resetear TODOS los valores del formulario
+                    setSelectedPaymentMethod("");
+                    setTotalAmount(0);
+                    setInvoiceNumber("");
+                    setRateErrorMessage("");
 
                     // Mostrar un solo mensaje de éxito
                     alert(
-                      "Servicio registrado exitosamente, habitación desocupada"
+                      "Cuenta cerrada exitosamente, habitación desocupada"
                     );
                   }, 100);
                 } catch (error) {
@@ -1538,9 +1658,19 @@ const RoomStatus = () => {
                   alert("Error al registrar el servicio: " + error);
                 }
               }}
-              className=" mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12  m-4"
+              disabled={isRoomStatusActive && !hasViewedConsumptions}
+              className={`mt-4 px-4 py-2 rounded h-12 m-4 ${
+                isRoomStatusActive && !hasViewedConsumptions
+                  ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  : "bg-blue-900 text-white hover:bg-blue-700"
+              }`}
+              title={
+                isRoomStatusActive && !hasViewedConsumptions
+                  ? "Debe ver los consumos antes de cerrar la cuenta"
+                  : ""
+              }
             >
-              Registrar Servicio
+              Cerrar cuenta
             </button>
             <button
               onClick={handleOccupyRoom}
@@ -1659,6 +1789,8 @@ const RoomStatus = () => {
             total={totalAmount}
             roomNumber={roomNumber}
             timeInMinutes={calculateTotalMinutes(checkInTime, checkOutTime)}
+            additionalHourCost={additionalHourCost}
+            additionalHourQuantity={additionalHourQuantity}
           />
         </div>
       </div>

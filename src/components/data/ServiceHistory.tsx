@@ -18,10 +18,21 @@ interface ServiceHistoryItem {
 }
 
 interface ServiceDetail {
-  description: string;
-  quantity: number;
-  subtotal: string;
-  unitPrice: string;
+  // Campos de productos
+  description?: string;
+  quantity?: number;
+  subtotal?: string;
+  unitPrice?: string;
+  
+  // Campos de información del servicio
+  type?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  selectedRate?: number;
+  additionalHourCost?: number;
+  additionalHourQuantity?: number;
+  totalAdditionalHourCost?: number;
+  planName?: string;
 }
 
 const ServiceHistory = () => {
@@ -113,12 +124,26 @@ const ServiceHistory = () => {
                 const detailsRef = collection(doc(db, 'roomHistory', item.id), 'details');
                 const detailsSnapshot = await getDocs(detailsRef);
                 
-                const details = detailsSnapshot.docs.map(detailDoc => ({
-                  description: detailDoc.data().description,
-                  quantity: detailDoc.data().quantity,
-                  subtotal: detailDoc.data().subtotal,
-                  unitPrice: detailDoc.data().unitPrice,
-                }));
+                const details = detailsSnapshot.docs.map(detailDoc => {
+                  const data = detailDoc.data();
+                  return {
+                    // Campos de productos
+                    description: data.description,
+                    quantity: data.quantity,
+                    subtotal: data.subtotal,
+                    unitPrice: data.unitPrice,
+                    
+                    // Campos de información del servicio
+                    type: data.type,
+                    checkInTime: data.checkInTime,
+                    checkOutTime: data.checkOutTime,
+                    selectedRate: data.selectedRate,
+                    additionalHourCost: data.additionalHourCost,
+                    additionalHourQuantity: data.additionalHourQuantity,
+                    totalAdditionalHourCost: data.totalAdditionalHourCost,
+                    planName: data.planName,
+                  };
+                });
                 
                 updateWithDetails(i + batchIndex, details);
               } catch (detailError) {
@@ -232,13 +257,26 @@ const ServiceHistory = () => {
         
         if (querySnapshot.empty) {
           setSelectedDetails([]);
-        } else {
-          const detailsData = querySnapshot.docs.map(doc => ({
-            description: doc.data().description,
-            quantity: doc.data().quantity,
-            subtotal: doc.data().subtotal,
-            unitPrice: doc.data().unitPrice,
-          }));
+        } else {        const detailsData = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            // Campos de productos
+            description: data.description,
+            quantity: data.quantity,
+            subtotal: data.subtotal,
+            unitPrice: data.unitPrice,
+            
+            // Campos de información del servicio
+            type: data.type,
+            checkInTime: data.checkInTime,
+            checkOutTime: data.checkOutTime,
+            selectedRate: data.selectedRate,
+            additionalHourCost: data.additionalHourCost,
+            additionalHourQuantity: data.additionalHourQuantity,
+            totalAdditionalHourCost: data.totalAdditionalHourCost,
+            planName: data.planName,
+          };
+        });
           setSelectedDetails(detailsData);
         }
         
@@ -397,10 +435,10 @@ const ServiceHistory = () => {
               detailsWorksheet.addRow({
                 habitacion: item.roomNumber,
                 fecha: fecha,
-                descripcion: detail.description,
-                cantidad: detail.quantity,
-                precioUnitario: formatCurrency(detail.unitPrice),
-                subtotal: formatCurrency(detail.subtotal)
+                descripcion: detail.description || 'N/A',
+                cantidad: detail.quantity || 0,
+                precioUnitario: detail.unitPrice ? formatCurrency(detail.unitPrice) : 'N/A',
+                subtotal: detail.subtotal ? formatCurrency(detail.subtotal) : 'N/A'
               });
               rowIndex++;
             });
@@ -780,38 +818,113 @@ const ServiceHistory = () => {
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <>                <div className="grid grid-cols-4 gap-4 mb-3 bg-blue-100 p-3 rounded-md">
-                  <span className="font-bold text-blue-900 text-sm">Descripción</span>
-                  <span className="font-bold text-blue-900 text-center text-sm">Cantidad</span>
-                  <span className="font-bold text-blue-900 text-center text-sm">Precio Unitario</span>
-                  <span className="font-bold text-blue-900 text-center text-sm">Subtotal</span>
-                </div>
-                <div className="mt-2 divide-y divide-blue-200">
-                  {selectedDetails && selectedDetails.length > 0 ? (
-                    selectedDetails.map((detail, index) => (
-                      <div key={index} className="grid grid-cols-4 gap-4 py-3 hover:bg-blue-50 transition-colors">
-                        <span className="text-gray-800 text-sm">{detail.description}</span>
-                        <span className="text-center text-sm text-gray-800">{detail.quantity}</span>
-                        <span className="text-center text-sm text-gray-800">{formatCurrency(detail.unitPrice)}</span>
-                        <span className="text-center font-medium text-sm text-gray-800">{formatCurrency(detail.subtotal)}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="py-4 text-center text-gray-500 text-sm">
-                      No hay detalles disponibles para este servicio
+              <>
+                {/* Sección de información del servicio */}
+                {selectedDetails && selectedDetails.some(detail => detail.type === 'serviceInfo') && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-blue-900 mb-3">Información del Servicio</h4>
+                    {selectedDetails
+                      .filter(detail => detail.type === 'serviceInfo')
+                      .map((serviceInfo, index) => (
+                        <div key={index} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <span className="font-medium text-blue-900">Hora de Ingreso:</span>
+                              <span className="ml-2 text-gray-800">{serviceInfo.checkInTime || 'N/A'}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-blue-900">Hora de Salida:</span>
+                              <span className="ml-2 text-gray-800">{serviceInfo.checkOutTime || 'N/A'}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-blue-900">Plan Seleccionado:</span>
+                              <span className="ml-2 text-gray-800">{serviceInfo.planName || 'N/A'}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-blue-900">Tarifa:</span>
+                              <span className="ml-2 text-gray-800">
+                                {serviceInfo.selectedRate ? formatCurrency(serviceInfo.selectedRate.toString()) : 'N/A'}
+                              </span>
+                            </div>
+                            {serviceInfo.additionalHourQuantity && serviceInfo.additionalHourQuantity > 0 && (
+                              <>
+                                <div>
+                                  <span className="font-medium text-blue-900">Horas Adicionales:</span>
+                                  <span className="ml-2 text-gray-800">{serviceInfo.additionalHourQuantity}</span>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-blue-900">Costo Hora Adicional:</span>
+                                  <span className="ml-2 text-gray-800">
+                                    {serviceInfo.additionalHourCost ? formatCurrency(serviceInfo.additionalHourCost.toString()) : 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="md:col-span-2">
+                                  <span className="font-medium text-blue-900">Total Horas Adicionales:</span>
+                                  <span className="ml-2 text-gray-800 font-semibold">
+                                    {serviceInfo.totalAdditionalHourCost ? formatCurrency(serviceInfo.totalAdditionalHourCost.toString()) : 'N/A'}
+                                  </span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {/* Sección de productos consumidos */}
+                {selectedDetails && selectedDetails.some(detail => detail.type === 'product' || !detail.type) && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-blue-900 mb-3">Productos Consumidos</h4>
+                    <div className="grid grid-cols-4 gap-4 mb-3 bg-blue-100 p-3 rounded-md">
+                      <span className="font-bold text-blue-900 text-sm">Descripción</span>
+                      <span className="font-bold text-blue-900 text-center text-sm">Cantidad</span>
+                      <span className="font-bold text-blue-900 text-center text-sm">Precio Unitario</span>
+                      <span className="font-bold text-blue-900 text-center text-sm">Subtotal</span>
                     </div>
-                  )}
-                </div>
+                    <div className="mt-2 divide-y divide-blue-200">
+                      {selectedDetails
+                        .filter(detail => detail.type === 'product' || !detail.type)
+                        .map((detail, index) => (
+                          <div key={index} className="grid grid-cols-4 gap-4 py-3 hover:bg-blue-50 transition-colors">
+                            <span className="text-gray-800 text-sm">{detail.description || 'N/A'}</span>
+                            <span className="text-center text-sm text-gray-800">{detail.quantity || 0}</span>
+                            <span className="text-center text-sm text-gray-800">
+                              {detail.unitPrice ? formatCurrency(detail.unitPrice) : 'N/A'}
+                            </span>
+                            <span className="text-center font-medium text-sm text-gray-800">
+                              {detail.subtotal ? formatCurrency(detail.subtotal) : 'N/A'}
+                            </span>
+                          </div>
+                        ))}
+                      {selectedDetails.filter(detail => detail.type === 'product' || !detail.type).length === 0 && (
+                        <div className="py-4 text-center text-gray-500 text-sm">
+                          No hay productos consumidos en este servicio
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Si no hay ningún tipo de detalle */}
+                {selectedDetails && selectedDetails.length === 0 && (
+                  <div className="py-4 text-center text-gray-500 text-sm">
+                    No hay detalles disponibles para este servicio
+                  </div>
+                )}
                 
-                {selectedDetails && selectedDetails.length > 0 && (
+                {/* Total de productos (solo si hay productos) */}
+                {selectedDetails && selectedDetails.filter(detail => detail.type === 'product' || !detail.type).length > 0 && (
                   <div className="mt-6 pt-4 border-t border-gray-300 flex justify-end">
                     <div className="text-right">
-                      <span className="font-bold text-lg text-blue-900">Total: </span>
+                      <span className="font-bold text-lg text-blue-900">Total Productos: </span>
                       <span className="font-bold text-lg">
                         {formatCurrency(
-                          selectedDetails.reduce((sum, detail) => 
-                            sum + parseFloat(detail.subtotal.replace(/[^\d.-]/g, '')), 0
-                          ).toString()
+                          selectedDetails
+                            .filter(detail => detail.type === 'product' || !detail.type)
+                            .reduce((sum, detail) => 
+                              sum + parseFloat((detail.subtotal || '0').replace(/[^\d.-]/g, '')), 0
+                            ).toString()
                         )}
                       </span>
                     </div>
