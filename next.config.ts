@@ -68,6 +68,10 @@ const nextConfig =  {
       {
         source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_Y || '/permisos',
         destination: '/permissions',
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_F || '/factura',
+        destination: '/invoice',
       }
     ];
   },
@@ -145,6 +149,11 @@ const nextConfig =  {
       },
       {
         source: '/permissions',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/invoice',
         destination: '/404',
         permanent: false,
       },
