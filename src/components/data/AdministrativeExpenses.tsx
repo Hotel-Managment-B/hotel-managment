@@ -65,7 +65,7 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
   const handleRegisterExpense = async () => {
     if (!date || !expenseType || !concept || !value || !bank) {
       alert('Por favor, complete todos los campos.');
-      return;
+      return false; // Retornar false si falla la validación
     }
 
     try {
@@ -76,32 +76,27 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
         value,
         bank,
       });
-      alert('Gasto registrado exitosamente.');
 
       // Actualizar la lista de tipos de gastos si se agregó uno nuevo
       if (!expenseTypes.includes(expenseType)) {
         setExpenseTypes([...expenseTypes, expenseType]);
       }
 
-      // Resetear los campos después de registrar
-      setDate('');
-      setExpenseType('');
-      setConcept('');
-      setValue('');
-      setBank('');
-
       // Activar la actualización de la lista
       setRefreshList(!refreshList);
+
+      return true; // Retornar true si el registro fue exitoso
     } catch (error) {
       console.error('Error al registrar el gasto:', error);
       alert('Hubo un error al registrar el gasto.');
+      return false; // Retornar false si hubo error
     }
   };
 
   const handleUpdateBankAccount = async () => {
     if (!bank || !value) {
       alert('Por favor, seleccione un banco y complete el valor.');
-      return;
+      return false;
     }
 
     try {
@@ -119,13 +114,16 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
           initialAmount: increment(-numericValue),
         });
 
-        alert('Monto descontado exitosamente de la cuenta bancaria.');
+        console.log(`Descontado ${formatCurrency(numericValue)} de la cuenta ${bank}`);
+        return true;
       } else {
         alert('No se encontró la cuenta bancaria especificada.');
+        return false;
       }
     } catch (error) {
       console.error('Error al actualizar la cuenta bancaria:', error);
       alert('Hubo un error al actualizar la cuenta bancaria.');
+      return false;
     }
   };
 
@@ -239,8 +237,19 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
             <div className="flex justify-center items-center">
               <button
                 onClick={async () => {
-                  await handleRegisterExpense();
-                  await handleUpdateBankAccount();
+                  const expenseRegistered = await handleRegisterExpense();
+                  if (expenseRegistered) {
+                    const bankUpdated = await handleUpdateBankAccount();
+                    if (bankUpdated) {
+                      alert('Gasto registrado y monto descontado exitosamente.');
+                      // Resetear los campos después de registrar exitosamente
+                      setDate('');
+                      setExpenseType('');
+                      setConcept('');
+                      setValue('');
+                      setBank('');
+                    }
+                  }
                 }}
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
               >

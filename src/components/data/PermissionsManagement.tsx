@@ -82,6 +82,18 @@ const PermissionsManagement = () => {
       description: "Ver histórico de préstamos",
       category: "Finanzas",
     },
+    {
+      id: "16",
+      name: "Historial de Cierres",
+      description: "Ver historial de cierres de caja realizados",
+      category: "Finanzas",
+    },
+    {
+      id: "17",
+      name: "Cierre de Caja",
+      description: "Realizar cierre de caja y turnos",
+      category: "Finanzas",
+    },
 
     // Inventario
     {
@@ -128,6 +140,12 @@ const PermissionsManagement = () => {
       id: "14",
       name: "Permiso Especial",
       description: "Acceso a funcionalidades especiales",
+      category: "Permisos",
+    },
+    {
+      id: "15",
+      name: "Editor de Factura",
+      description: "Acceso al editor visual de facturas",
       category: "Permisos",
     },
   ]);
