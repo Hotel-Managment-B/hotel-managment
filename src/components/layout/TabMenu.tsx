@@ -144,6 +144,7 @@ const TabMenu = () => {
           >
             Historial de Gastos
           </button>
+          
           <button
             onClick={() => {
               setActiveTab("/insumos");
@@ -202,6 +203,26 @@ const TabMenu = () => {
             className={getButtonClass("/factura")}
           >
             Editor de Factura
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/cierre");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_B || "/");
+            }}
+            className={`${getButtonClass("/cierre")} whitespace-nowrap`}
+          >
+            Cierre de Caja
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("/historial de cierres");
+              setIsMenuOpen(false);
+              router.push(process.env.NEXT_PUBLIC_CUSTOM_ROUTE_V || "/");
+            }}
+            className={getButtonClass("/historial de cierres")}
+          >
+            Historial de Cierres
           </button>
 
           {/* Separator line */}
