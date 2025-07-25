@@ -19,6 +19,10 @@ const routePermissions: Record<string, string[]> = {
   '/gastos': ['4'], // Gastos (rewrite route)
   '/administrative-list': ['5'], // Historial de Gastos
   '/historial-gastos': ['5'], // Historial de Gastos (rewrite route)
+  '/close-history': ['16'], // Historial de Cierres
+  '/historial-cierres': ['16'], // Historial de Cierres (rewrite route)
+  '/close': ['17'], // Cierre de Caja
+  '/cierre': ['17'], // Cierre de Caja (rewrite route)
   '/loans': ['6'], // Préstamos
   '/prestamos-empleados': ['6'], // Préstamos (rewrite route)
   '/list-loans': ['7'], // Lista de Préstamos
@@ -47,6 +51,8 @@ const routePermissions: Record<string, string[]> = {
   // Special permissions
   '/permissions': ['14'], // Permiso Especial
   '/permissions-setup': ['14'], // Permiso Especial
+  '/invoice': ['15'], // Editor de Factura
+  '/factura': ['15'], // Editor de Factura (rewrite route)
 }
 
 // Helper function to check if user has required permissions for a route
@@ -116,6 +122,8 @@ export const config = {
     '/add-employee/:path*',
     '/administrative/:path*',
     '/administrative-list/:path*',
+    '/close-history/:path*',
+    '/close/:path*',
     '/bank/:path*',
     '/employee-list/:path*',
     '/list-loans/:path*',
@@ -132,6 +140,7 @@ export const config = {
     '/toiletries/:path*',
     '/toiletries-list/:path*',
     '/toiletries-spent/:path*',
+    '/invoice/:path*',
     
     // Protected routes - rewrite paths (from next.config.ts)
     '/inicio/:path*',
@@ -144,9 +153,12 @@ export const config = {
     '/habitaciones/:path*',
     '/gastos/:path*',
     '/historial-gastos/:path*',
+    '/historial-cierres/:path*',
+    '/cierre/:path*',
     '/insumos/:path*',
     '/historial-servicios/:path*',
     '/prestamos-empleados/:path*',
     '/prestamos-empleados-lista/:path*',
+    '/factura/:path*',
   ]
 }
