@@ -72,7 +72,15 @@ const nextConfig =  {
       {
         source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_F || '/factura',
         destination: '/invoice',
-      }
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_B || '/cierre',
+        destination: '/close',
+      },
+      {
+        source: process.env.NEXT_PUBLIC_CUSTOM_ROUTE_V || '/historial-cierres',
+        destination: '/close-history',
+      },
     ];
   },
   async redirects() {
@@ -154,6 +162,16 @@ const nextConfig =  {
       },
       {
         source: '/invoice',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/close',
+        destination: '/404',
+        permanent: false,
+      },
+      {
+        source: '/close-history',
         destination: '/404',
         permanent: false,
       },
