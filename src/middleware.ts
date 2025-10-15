@@ -51,6 +51,8 @@ const routePermissions: Record<string, string[]> = {
   // Special permissions
   '/permissions': ['14'], // Permiso Especial
   '/permissions-setup': ['14'], // Permiso Especial
+  '/permisos': ['14'], // Permiso Especial (ruta reescrita)
+  '/permisos-setup': ['14'], // Permiso Especial (ruta reescrita)
   '/invoice': ['15'], // Editor de Factura
   '/factura': ['15'], // Editor de Factura (rewrite route)
 }
@@ -160,5 +162,7 @@ export const config = {
     '/prestamos-empleados/:path*',
     '/prestamos-empleados-lista/:path*',
     '/factura/:path*',
+    '/permisos/:path*',      
+    '/permisos-setup/:path*', 
   ]
 }
