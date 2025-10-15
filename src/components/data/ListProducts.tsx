@@ -122,12 +122,7 @@ const ListProducts = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-64 px-3 py-2 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <button
-              onClick={openModal}
-              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Registrar Productos
-            </button>
+            
           </div>          <div className="w-full overflow-x-auto">            <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
               <thead className="bg-blue-100">
                 <tr>
