@@ -21,7 +21,7 @@ interface Product {
 
 const AddPurchase = () => {
   const [rows, setRows] = useState([
-    { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
+    { code: "", description: "", quantity: 0, unitPrice: "", subtotal: "" },
   ]);
   const [products, setProducts] = useState<Product[]>([]);
   const [bankAccounts, setBankAccounts] = useState<{ id: string; accountName: string }[]>([]);
@@ -63,7 +63,7 @@ const AddPurchase = () => {
   const handleAddRow = () => {
     setRows([
       ...rows,
-      { code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" },
+      { code: "", description: "", quantity: 0, unitPrice: "", subtotal: "" },
     ]);
   };
 
@@ -105,7 +105,7 @@ const AddPurchase = () => {
     if (selectedProduct) {
       setRows(prevRows => {
         const updatedRows = [...prevRows];
-        const currentQuantity = updatedRows[index].quantity || 1;
+        const currentQuantity = updatedRows[index].quantity || 0;
         const unitPrice = selectedProduct.unitPurchaseValue;
         const subtotal = calculateSubtotal(currentQuantity, unitPrice);
         
@@ -330,11 +330,12 @@ const AddPurchase = () => {
                 placeholder="Cantidad"
                 value={row.quantity}
                 onChange={(e) => {
-                  const quantity = parseInt(e.target.value, 10) || 1;
+                  const value = e.target.value;
+                  const quantity = value === "" ? 0 : parseInt(value, 10) || 0;
                   handleRowChange(index, "quantity", quantity);
                 }}
                 className="border focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2"
-                min="1"
+                min="0"
               />
               <input
                 type="text"
