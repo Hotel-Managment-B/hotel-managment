@@ -20,17 +20,26 @@ interface AddRoomProps {
     oneAndHalfHourRate: string;
     threeHourRate: string;
     overnightRate: string;
+    additionalHourRate?: string; // Nuevo campo
   } | null;
   onUpdateList?: () => Promise<void>;
 }
 
 const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateList }) => {
-  const [roomData, setRoomData] = useState({
+  const [roomData, setRoomData] = useState<{
+    roomNumber: string;
+    hourlyRate: string;
+    oneAndHalfHourRate: string;
+    threeHourRate: string;
+    overnightRate: string;
+    additionalHourRate: string;
+  }>({
     roomNumber: initialRoomData?.roomNumber || "",
     hourlyRate: initialRoomData?.hourlyRate || "",
     oneAndHalfHourRate: initialRoomData?.oneAndHalfHourRate || "",
     threeHourRate: initialRoomData?.threeHourRate || "",
     overnightRate: initialRoomData?.overnightRate || "",
+    additionalHourRate: initialRoomData?.additionalHourRate || "",
   });
 
   const [message, setMessage] = useState("");
@@ -43,6 +52,7 @@ const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateLi
         oneAndHalfHourRate: initialRoomData.oneAndHalfHourRate,
         threeHourRate: initialRoomData.threeHourRate,
         overnightRate: initialRoomData.overnightRate,
+        additionalHourRate: initialRoomData.additionalHourRate || "", // Nuevo campo
       });
     }
   }, [initialRoomData]);
@@ -53,7 +63,8 @@ const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateLi
       name === "hourlyRate" ||
       name === "oneAndHalfHourRate" ||
       name === "threeHourRate" ||
-      name === "overnightRate"
+      name === "overnightRate" ||
+      name === "additionalHourRate" // Nuevo campo
         ? formatCurrency(value)
         : value;
     setRoomData({ ...roomData, [name]: formattedValue });
@@ -80,6 +91,7 @@ const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateLi
             oneAndHalfHourRate: roomData.oneAndHalfHourRate,
             threeHourRate: roomData.threeHourRate,
             overnightRate: roomData.overnightRate,
+            additionalHourRate: roomData.additionalHourRate, // Nuevo campo
           }; // Excluir el campo status
 
           await updateDoc(roomDocRef, updatedData);
@@ -194,6 +206,19 @@ const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateLi
               type="text"
               name="overnightRate"
               value={roomData.overnightRate}
+              onChange={handleChange}
+              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-blue-800 mb-1">
+              Valor de Hora Adicional
+            </label>
+            <input
+              type="text"
+              name="additionalHourRate"
+              value={roomData.additionalHourRate}
               onChange={handleChange}
               className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
               required
