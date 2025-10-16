@@ -12,6 +12,7 @@ interface Room {
   oneAndHalfHourRate: string;
   threeHourRate: string;
   overnightRate: string;
+  additionalHourRate: string;
   status: string;
 }
 
@@ -32,6 +33,7 @@ const RoomService = () => {
             oneAndHalfHourRate: doc.data().oneAndHalfHourRate || "",
             threeHourRate: doc.data().threeHourRate || "",
             overnightRate: doc.data().overnightRate || "",
+            additionalHourRate: doc.data().additionalHourRate || "",
             status: doc.data().status || "",
           }))
           .sort((a, b) => parseInt(a.roomNumber) - parseInt(b.roomNumber));
@@ -57,10 +59,10 @@ const RoomService = () => {
             <div              onClick={() => {
                 setActiveRoom(room.roomNumber); // Actualizar la habitación activa
                 console.log(
-                  `Navigating to: /room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}&from=roomservice`
+                  `Navigating to: /room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}&additionalHourRate=${room.additionalHourRate}&from=roomservice`
                 );
                 router.push(
-                  `/room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}&from=roomservice`
+                  `/room-status?roomNumber=${room.roomNumber}&status=${room.status}&hourlyRate=${room.hourlyRate}&oneAndHalfHourRate=${room.oneAndHalfHourRate}&threeHourRate=${room.threeHourRate}&overnightRate=${room.overnightRate}&additionalHourRate=${room.additionalHourRate}&from=roomservice`
                 );
               }}
               className={`cursor-pointer ${

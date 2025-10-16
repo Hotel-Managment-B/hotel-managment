@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { formatCurrency } from "../../utils/FormatCurrency";
 
 interface InvoiceItem {
@@ -33,6 +33,11 @@ const Invoice: React.FC<InvoiceProps> = ({
   additionalHourCost = 0,
   additionalHourQuantity = 0,
 }) => {
+  const [currentDate, setCurrentDate] = useState("");
+
+  useEffect(() => {
+    setCurrentDate(new Date().toLocaleString('es-ES'));
+  }, []);
   return (
     <div style={{ 
       backgroundColor: '#ffffff', 
@@ -183,7 +188,7 @@ const Invoice: React.FC<InvoiceProps> = ({
         color: '#666666' 
       }}>
         <p style={{ margin: '0 0 4px 0' }}>Gracias por su estadía, nos sentimos complacidos por su visita.</p>
-        <p style={{ margin: '0' }}>{new Date().toLocaleString('es-ES')}</p>
+        <p style={{ margin: '0' }}>{currentDate}</p>
       </div>
     </div>
   );
