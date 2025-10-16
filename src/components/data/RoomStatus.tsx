@@ -686,8 +686,10 @@ const RoomStatus = () => {
       if (!currentCheckInDateTime) {
         const now = new Date();
         currentCheckInDateTime = now.toISOString();
-        setCheckInTime(currentCheckInDateTime);
       }
+      
+      // Establecer la hora de ingreso en el estado (mantener ISO internamente, mostrar solo HH:MM)
+      setCheckInTime(currentCheckInDateTime);
 
       const roomStatusRef = await addDoc(collection(db, "roomStatus"), {
         checkInTime: currentCheckInDateTime || serverTimestamp(),
@@ -1003,6 +1005,26 @@ const RoomStatus = () => {
     }
   };
 
+  // Función para extraer solo la hora del ISO string o formato de hora
+  const extractTimeFromISO = (timeString: string): string => {
+    if (!timeString) return "";
+    
+    // Si es un ISO string (contiene T)
+    if (timeString.includes('T')) {
+      try {
+        const date = new Date(timeString);
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${hours}:${minutes}`;
+      } catch {
+        return timeString;
+      }
+    }
+    
+    // Si ya es formato HH:MM, devolverlo
+    return timeString;
+  };
+
   // Función para calcular el tiempo total en minutos entre dos horas
   const calculateTotalMinutes = (checkIn: string, checkOut: string): number => {
     if (!checkIn || !checkOut) return 0;
@@ -1013,8 +1035,19 @@ const RoomStatus = () => {
         // Son ISO strings, calcular diferencia en milisegundos
         const checkInDate = new Date(checkIn);
         const checkOutDate = new Date(checkOut);
+        
+        // Validar que las fechas sean válidas
+        if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+          console.error("Fechas inválidas:", checkIn, checkOut);
+          return 0;
+        }
+        
         const diffInMs = checkOutDate.getTime() - checkInDate.getTime();
-        return Math.floor(diffInMs / (1000 * 60)); // Convertir a minutos
+        const totalMinutes = Math.floor(diffInMs / (1000 * 60)); // Convertir a minutos
+        
+        // Si el resultado es negativo, significa que checkOut es anterior a checkIn
+        // En ese caso, devolver el valor absoluto
+        return Math.abs(totalMinutes);
       } else {
         // Son formato hh:mm, usar lógica antigua
         const [checkInHours, checkInMinutes] = checkIn.split(":").map(Number);
@@ -1418,7 +1451,7 @@ const RoomStatus = () => {
               </label>
               <input
                 type="time"
-                value={checkInTime}
+                value={extractTimeFromISO(checkInTime)}
                 readOnly={true}
                 className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 bg-gray-100"
               />
@@ -1429,7 +1462,7 @@ const RoomStatus = () => {
               </label>
               <input
                 type="time"
-                value={checkOutTime}
+                value={extractTimeFromISO(checkOutTime)}
                 readOnly={true}
                 className="border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md p-2 bg-gray-100"
               />
