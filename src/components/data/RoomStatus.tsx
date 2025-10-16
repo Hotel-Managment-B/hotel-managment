@@ -84,6 +84,7 @@ const RoomStatus = () => {
   const [hasViewedConsumptions, setHasViewedConsumptions] = useState(false);
   const [hasConsumptionsInModal, setHasConsumptionsInModal] = useState(false);
   const [isProcessingClose, setIsProcessingClose] = useState(false);
+  const [consumptionsRequireRegistration, setConsumptionsRequireRegistration] = useState(false);
   
   // Estados para PDF
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -289,6 +290,23 @@ const RoomStatus = () => {
             
             setCheckInTime(checkInTimeValue);
           }
+
+          // Verificar si hay consumos sin registrar en el modal
+          const hasItems = roomStatus[0]?.items && roomStatus[0].items.length > 0;
+          if (hasItems) {
+            setConsumptionsRequireRegistration(true);
+            setHasConsumptionsInModal(true);
+            // NO marcar como visto, para que el botón permanezca desactivado
+            setHasViewedConsumptions(false);
+          } else {
+            setConsumptionsRequireRegistration(false);
+            setHasConsumptionsInModal(false);
+          }
+        } else {
+          // Si no hay roomStatus, resetear todo
+          setConsumptionsRequireRegistration(false);
+          setHasConsumptionsInModal(false);
+          setHasViewedConsumptions(false);
         }
       } catch (error) {
         console.error("Error al precargar los datos de roomStatus: ", error);
@@ -689,6 +707,7 @@ const RoomStatus = () => {
       // Resetear el estado de consumos vistos cuando se ocupa una nueva habitación
       setHasViewedConsumptions(false);
       setHasConsumptionsInModal(false);
+      setConsumptionsRequireRegistration(false);
 
       // IMPORTANTE: Actualizar el estado en Firebase PRIMERO
       const statusUpdated = await handleStatusUpdate("ocupado");
@@ -783,7 +802,8 @@ const RoomStatus = () => {
       // Marcar que se han visto y registrado los consumos
       setHasViewedConsumptions(true);
       
-      // Resetear el estado de consumos en modal
+      // Ya NO hay consumos que requieran registro
+      setConsumptionsRequireRegistration(false);
       setHasConsumptionsInModal(false);
 
       // Cerrar el modal
@@ -941,7 +961,15 @@ const RoomStatus = () => {
     if (roomStatusData) {
       // Verificar si hay consumos en el modal
       const hasItems = roomStatusData[0]?.items && roomStatusData[0].items.length > 0;
-      setHasConsumptionsInModal(hasItems);
+      if (hasItems) {
+        setConsumptionsRequireRegistration(true);
+        setHasConsumptionsInModal(true);
+        // NO marcar como visto
+        setHasViewedConsumptions(false);
+      } else {
+        setConsumptionsRequireRegistration(false);
+        setHasConsumptionsInModal(false);
+      }
       setIsModalOpen(true);
     } else {
       alert("No se encontraron datos de estado para esta habitación.");
@@ -1689,7 +1717,7 @@ const RoomStatus = () => {
                   }
 
                   // Validar que se hayan registrado los consumos si los hay
-                  if (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions) {
+                  if (consumptionsRequireRegistration) {
                     alert(
                       "Debe hacer clic en 'Registrar consumo' antes de cerrar la cuenta."
                     );
@@ -1740,6 +1768,7 @@ const RoomStatus = () => {
                       // Resetear TODOS los estados de consumos vistos
                       setHasViewedConsumptions(false);
                       setHasConsumptionsInModal(false);
+                      setConsumptionsRequireRegistration(false);
                       
                       // Resetear TODOS los valores del formulario
                       setSelectedPaymentMethod("");
@@ -1762,18 +1791,18 @@ const RoomStatus = () => {
                   setIsProcessingClose(false);
                 }
               }}
-              disabled={isProcessingClose || (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions)}
+              disabled={isProcessingClose || consumptionsRequireRegistration}
               className={`mt-4 px-4 py-2 rounded h-12 m-4 transition-all duration-200 ${
                 isProcessingClose
                   ? "bg-yellow-500 text-white cursor-wait opacity-75"
-                  : (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions)
+                  : consumptionsRequireRegistration
                   ? "bg-gray-400 text-gray-700 cursor-not-allowed"
                   : "bg-blue-900 text-white hover:bg-blue-700"
               }`}
               title={
                 isProcessingClose
                   ? "Procesando cierre de cuenta..."
-                  : (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions)
+                  : consumptionsRequireRegistration
                   ? "Debe hacer clic en 'Registrar consumo' antes de cerrar la cuenta"
                   : "Cerrar la cuenta de la habitación"
               }
