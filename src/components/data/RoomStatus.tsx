@@ -551,13 +551,14 @@ const RoomStatus = () => {
       // Agregar información de servicio de habitación (hora, tarifa, etc.)
       await addDoc(detailsRef, {
         type: "serviceInfo", // Tipo para identificar este registro
-        checkInTime: checkInTime,
-        checkOutTime: checkOutTime,
+        checkInTime: extractTimeFromISO(checkInTime), // Guardar solo HH:MM
+        checkOutTime: extractTimeFromISO(checkOutTime), // Guardar solo HH:MM
         selectedRate: selectedRate,
         additionalHourCost: additionalHourCost,
         additionalHourQuantity: additionalHourQuantity,
         totalAdditionalHourCost: additionalHourCost * additionalHourQuantity,
         planName: getSelectedPlanName(), // Nombre del plan seleccionado
+        totalGeneral: totalAmount, // ✅ Guardar el total general aquí
       });
       
       // Agregar productos consumidos
@@ -1973,8 +1974,8 @@ const RoomStatus = () => {
           <Invoice
             invoiceNumber={invoiceNumber}
             plan={getSelectedPlanName()}
-            checkInTime={checkInTime}
-            checkOutTime={checkOutTime}
+            checkInTime={extractTimeFromISO(checkInTime)}
+            checkOutTime={extractTimeFromISO(checkOutTime)}
             items={rows.map(row => ({
               description: row.description,
               quantity: row.quantity,
