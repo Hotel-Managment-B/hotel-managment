@@ -559,6 +559,8 @@ const RoomStatus = () => {
         totalAdditionalHourCost: additionalHourCost * additionalHourQuantity,
         planName: getSelectedPlanName(), // Nombre del plan seleccionado
         totalGeneral: totalAmount, // ✅ Guardar el total general aquí
+        timeInMinutes: calculateTotalMinutes(checkInTime, checkOutTime), // Tiempo transcurrido en minutos
+        timeDisplay: formatTimeDisplay(calculateTotalMinutes(checkInTime, checkOutTime)), // Tiempo transcurrido en formato legible
       });
       
       // Agregar productos consumidos
