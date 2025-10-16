@@ -33,6 +33,8 @@ interface ServiceDetail {
   additionalHourQuantity?: number;
   totalAdditionalHourCost?: number;
   planName?: string;
+  timeInMinutes?: number;
+  timeDisplay?: string;
 }
 
 const ServiceHistory = () => {
@@ -142,6 +144,8 @@ const ServiceHistory = () => {
                     additionalHourQuantity: data.additionalHourQuantity,
                     totalAdditionalHourCost: data.totalAdditionalHourCost,
                     planName: data.planName,
+                    timeInMinutes: data.timeInMinutes,
+                    timeDisplay: data.timeDisplay,
                   };
                 });
                 
@@ -275,6 +279,8 @@ const ServiceHistory = () => {
             additionalHourQuantity: data.additionalHourQuantity,
             totalAdditionalHourCost: data.totalAdditionalHourCost,
             planName: data.planName,
+            timeInMinutes: data.timeInMinutes,
+            timeDisplay: data.timeDisplay,
           };
         });
           setSelectedDetails(detailsData);
@@ -368,9 +374,13 @@ const ServiceHistory = () => {
       // Definir las columnas
       worksheet.columns = [
         { header: 'Fecha', key: 'fecha', width: 15 },
-        { header: 'Habitación', key: 'habitacion', width: 15 },
-        { header: 'Método de Pago', key: 'metodoPago', width: 20 },
-        { header: 'Total', key: 'total', width: 18 }
+        { header: 'Habitación', key: 'habitacion', width: 12 },
+        { header: 'Método de Pago', key: 'metodoPago', width: 18 },
+        { header: 'Hora de Entrada', key: 'horaEntrada', width: 15 },
+        { header: 'Hora de Salida', key: 'horaSalida', width: 15 },
+        { header: 'Tiempo de Ocupación', key: 'tiempoOcupacion', width: 20 },
+        { header: 'Horas Adicionales', key: 'horasAdicionales', width: 16 },
+        { header: 'Total', key: 'total', width: 15 }
       ];
 
       // Estilo para los encabezados
@@ -385,6 +395,9 @@ const ServiceHistory = () => {
 
       // Añadir los datos
       filteredItems.forEach((item: ServiceHistoryItem) => {
+        // Buscar la información del servicio en los detalles
+        const serviceInfo = item.details?.find(d => d.type === 'serviceInfo');
+        
         worksheet.addRow({
           fecha: new Date((item.date as any).seconds * 1000).toLocaleDateString('es-ES', {
             day: '2-digit',
@@ -393,6 +406,10 @@ const ServiceHistory = () => {
           }),
           habitacion: item.roomNumber,
           metodoPago: item.paymentMethod,
+          horaEntrada: serviceInfo?.checkInTime || 'N/A',
+          horaSalida: serviceInfo?.checkOutTime || 'N/A',
+          tiempoOcupacion: serviceInfo?.timeDisplay || (serviceInfo?.timeInMinutes ? `${serviceInfo.timeInMinutes} minutos` : 'N/A'),
+          horasAdicionales: serviceInfo?.additionalHourQuantity || 0,
           total: formatCurrency(item.total)
         });
       });
@@ -481,7 +498,7 @@ const ServiceHistory = () => {
       // Aplicar formato de tabla a la hoja principal
       worksheet.autoFilter = {
         from: { row: 1, column: 1 },
-        to: { row: filteredItems.length + 1, column: 4 }
+        to: { row: filteredItems.length + 1, column: 8 }
       };
 
       // Generar nombre de archivo con fecha y hora actual
@@ -844,6 +861,15 @@ const ServiceHistory = () => {
                               <span className="font-medium text-blue-900">Tarifa:</span>
                               <span className="ml-2 text-gray-800">
                                 {serviceInfo.selectedRate ? formatCurrency(serviceInfo.selectedRate.toString()) : 'N/A'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-blue-900">Tiempo de Ocupación:</span>
+                              <span className="ml-2 text-gray-800">
+                                {serviceInfo.timeDisplay || 
+                                 (serviceInfo.timeInMinutes 
+                                  ? `${serviceInfo.timeInMinutes} minuto${serviceInfo.timeInMinutes !== 1 ? 's' : ''}` 
+                                  : 'N/A')}
                               </span>
                             </div>
                             {serviceInfo.additionalHourQuantity && serviceInfo.additionalHourQuantity > 0 && (
