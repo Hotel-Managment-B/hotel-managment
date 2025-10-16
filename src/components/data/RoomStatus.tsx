@@ -242,7 +242,10 @@ const RoomStatus = () => {
           const roomStatus = querySnapshot.docs.map((doc) => {
             const data = doc.data();
 
-            // Formatear el timestamp a string si existe
+            // Guardar el checkInTime original (ISO string o timestamp)
+            let originalCheckInTime = data.checkInTime;
+            
+            // Formatear el timestamp a string si existe (solo para mostrar)
             let formattedCheckInTime = data.checkInTime;
             if (
               formattedCheckInTime &&
@@ -271,24 +274,22 @@ const RoomStatus = () => {
 
           setRoomStatusData(roomStatus);
           
-          // Establecer la hora de entrada desde los datos precargados
-          if (roomStatus[0]?.checkInTime) {
-            let checkInTimeValue = roomStatus[0].checkInTime;
+          // Establecer la hora de entrada desde el documento original de Firebase
+          if (!querySnapshot.empty) {
+            const originalData = querySnapshot.docs[0].data();
+            let checkInTimeValue = originalData.checkInTime;
             
-            // Si es un string con formato completo, extraer solo la hora
-            if (typeof checkInTimeValue === "string" && checkInTimeValue.includes(":")) {
-              const timeParts = checkInTimeValue.split(" ");
-              if (timeParts.length > 1) {
-                checkInTimeValue = timeParts[timeParts.length - 1];
-              }
-              
-              const hourMinuteParts = checkInTimeValue.split(":");
-              if (hourMinuteParts.length >= 2) {
-                checkInTimeValue = `${hourMinuteParts[0]}:${hourMinuteParts[1]}`;
+            // Si es un timestamp de Firestore, convertir a ISO string
+            if (checkInTimeValue && typeof checkInTimeValue !== "string") {
+              if (checkInTimeValue.toDate) {
+                checkInTimeValue = checkInTimeValue.toDate().toISOString();
               }
             }
             
-            setCheckInTime(checkInTimeValue);
+            // Si ya es ISO string o timestamp convertido, usarlo directamente
+            if (checkInTimeValue && typeof checkInTimeValue === "string") {
+              setCheckInTime(checkInTimeValue);
+            }
           }
 
           // Verificar si hay consumos sin registrar en el modal
@@ -1009,20 +1010,33 @@ const RoomStatus = () => {
   const extractTimeFromISO = (timeString: string): string => {
     if (!timeString) return "";
     
-    // Si es un ISO string (contiene T)
-    if (timeString.includes('T')) {
-      try {
+    try {
+      // Si es un ISO string (contiene T)
+      if (timeString.includes('T')) {
         const date = new Date(timeString);
+        
+        // Validar que la fecha sea válida
+        if (isNaN(date.getTime())) {
+          console.error("Fecha inválida:", timeString);
+          return "";
+        }
+        
         const hours = String(date.getHours()).padStart(2, "0");
         const minutes = String(date.getMinutes()).padStart(2, "0");
         return `${hours}:${minutes}`;
-      } catch {
+      }
+      
+      // Si ya es formato HH:MM, devolverlo
+      if (timeString.includes(':') && timeString.length === 5) {
         return timeString;
       }
+      
+      // Si no coincide ningún patrón, retornar vacío
+      return "";
+    } catch (error) {
+      console.error("Error extrayendo tiempo:", error, timeString);
+      return "";
     }
-    
-    // Si ya es formato HH:MM, devolverlo
-    return timeString;
   };
 
   // Función para calcular el tiempo total en minutos entre dos horas
