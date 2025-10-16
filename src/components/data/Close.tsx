@@ -73,7 +73,7 @@ interface RoomHistory {
 const Close = () => {
     const [closeData, setCloseData] = useState<CloseData>({
         fecha: new Date().toISOString().split('T')[0],
-        turno: "Diurno",
+        turno: "Turno 1",
         empleado: "",
         ventasEfectivo: 0,
         ventasTarjeta: 0,
@@ -446,7 +446,7 @@ const Close = () => {
         setTurnoRestaurado(false);
         setCloseData({
             fecha: new Date().toISOString().split('T')[0],
-            turno: 'Diurno',
+            turno: 'Turno 1',
             empleado: '',
             ventasEfectivo: 0,
             ventasTarjeta: 0,
@@ -650,9 +650,9 @@ const Close = () => {
                                         onChange={(e) => handleInputChange('turno', e.target.value)}
                                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     >
-                                        <option value="Diurno">Diurno (6:00 AM - 6:00 PM)</option>
-                                        <option value="Nocturno">Nocturno (6:00 PM - 6:00 AM)</option>
-                                        <option value="Completo">Turno Completo (24 horas)</option>
+                                        <option value="Turno 1">Turno 1</option>
+                                        <option value="Turno 2">Turno 2</option>
+                                        <option value="Turno 3">Turno 3</option>
                                     </select>
                                 </div>
                             </div>
