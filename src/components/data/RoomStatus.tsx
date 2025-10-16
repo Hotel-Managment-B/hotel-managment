@@ -83,6 +83,7 @@ const RoomStatus = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [hasViewedConsumptions, setHasViewedConsumptions] = useState(false);
   const [hasConsumptionsInModal, setHasConsumptionsInModal] = useState(false);
+  const [isProcessingClose, setIsProcessingClose] = useState(false);
   
   // Estados para PDF
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -1619,11 +1620,20 @@ const RoomStatus = () => {
             {" "}
             <button              onClick={async () => {
                 try {
+                  // Si ya está procesando, no permitir otro clic
+                  if (isProcessingClose) {
+                    return;
+                  }
+
+                  // Marcar que está procesando
+                  setIsProcessingClose(true);
+
                   // Validar que se haya seleccionado un método de pago
                   if (!selectedPaymentMethod) {
                     alert(
                       "Por favor seleccione un método de pago antes de registrar el servicio."
                     );
+                    setIsProcessingClose(false);
                     return;
                   }
 
@@ -1632,6 +1642,7 @@ const RoomStatus = () => {
                     alert(
                       "Debe hacer clic en 'Registrar consumo' antes de cerrar la cuenta."
                     );
+                    setIsProcessingClose(false);
                     return;
                   }
 
@@ -1641,70 +1652,82 @@ const RoomStatus = () => {
 
                   // Esperar un momento para que se actualice el estado
                   setTimeout(async () => {
-                    // Generar PDF
-                    await generatePDF();
+                    try {
+                      // Generar PDF
+                      await generatePDF();
 
-                    // Registrar la compra y validar que fue exitoso
-                    const purchaseRegistered = await handleRegisterPurchase();
-                    if (!purchaseRegistered && purchaseRegistered !== undefined) {
-                      console.error("No se pudo registrar la compra");
-                      return;
+                      // Registrar la compra y validar que fue exitoso
+                      const purchaseRegistered = await handleRegisterPurchase();
+                      if (!purchaseRegistered && purchaseRegistered !== undefined) {
+                        console.error("No se pudo registrar la compra");
+                        setIsProcessingClose(false);
+                        return;
+                      }
+
+                      // Actualizar las cantidades de productos
+                      await handleUpdateProductQuantity();
+
+                      // Eliminar el estado de la habitación
+                      await handleDeleteRoomStatus();
+
+                      // IMPORTANTE: Actualizar el estado en Firebase PRIMERO y verificar que fue exitoso
+                      const statusUpdated = await handleStatusUpdate("desocupado");
+                      
+                      if (!statusUpdated) {
+                        console.error("No se pudo actualizar el estado de la habitación");
+                        alert("Error al actualizar el estado de la habitación");
+                        setIsProcessingClose(false);
+                        return;
+                      }
+                      
+                      console.log("Estado actualizado exitosamente a: desocupado");
+
+                      // Actualizar el estado para mostrar u ocultar botones
+                      setIsRoomStatusActive(false);
+                      setRoomStatusData(null);
+                      
+                      // Resetear TODOS los estados de consumos vistos
+                      setHasViewedConsumptions(false);
+                      setHasConsumptionsInModal(false);
+                      
+                      // Resetear TODOS los valores del formulario
+                      setSelectedPaymentMethod("");
+                      setTotalAmount(0);
+                      setInvoiceNumber("");
+                      setRateErrorMessage("");
+
+                      // Mostrar un solo mensaje de éxito
+                      alert(
+                        "Cuenta cerrada exitosamente, habitación desocupada"
+                      );
+                    } finally {
+                      // Siempre resetear el flag de procesamiento al final
+                      setIsProcessingClose(false);
                     }
-
-                    // Actualizar las cantidades de productos
-                    await handleUpdateProductQuantity();
-
-                    // Eliminar el estado de la habitación
-                    await handleDeleteRoomStatus();
-
-                    // IMPORTANTE: Actualizar el estado en Firebase PRIMERO y verificar que fue exitoso
-                    const statusUpdated = await handleStatusUpdate("desocupado");
-                    
-                    if (!statusUpdated) {
-                      console.error("No se pudo actualizar el estado de la habitación");
-                      alert("Error al actualizar el estado de la habitación");
-                      return;
-                    }
-                    
-                    console.log("Estado actualizado exitosamente a: desocupado");
-
-                    // Actualizar el estado para mostrar u ocultar botones
-                    setIsRoomStatusActive(false);
-                    setRoomStatusData(null);
-                    
-                    // Resetear TODOS los estados de consumos vistos
-                    setHasViewedConsumptions(false);
-                    setHasConsumptionsInModal(false);
-                    
-                    // Resetear TODOS los valores del formulario
-                    setSelectedPaymentMethod("");
-                    setTotalAmount(0);
-                    setInvoiceNumber("");
-                    setRateErrorMessage("");
-
-                    // Mostrar un solo mensaje de éxito
-                    alert(
-                      "Cuenta cerrada exitosamente, habitación desocupada"
-                    );
                   }, 100);
                 } catch (error) {
                   console.error("Error al registrar el servicio:", error);
                   alert("Error al registrar el servicio: " + error);
+                  setIsProcessingClose(false);
                 }
               }}
-              disabled={isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions}
-              className={`mt-4 px-4 py-2 rounded h-12 m-4 ${
-                isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions
+              disabled={isProcessingClose || (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions)}
+              className={`mt-4 px-4 py-2 rounded h-12 m-4 transition-all duration-200 ${
+                isProcessingClose
+                  ? "bg-yellow-500 text-white cursor-wait opacity-75"
+                  : (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions)
                   ? "bg-gray-400 text-gray-700 cursor-not-allowed"
                   : "bg-blue-900 text-white hover:bg-blue-700"
               }`}
               title={
-                isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions
+                isProcessingClose
+                  ? "Procesando cierre de cuenta..."
+                  : (isRoomStatusActive && hasConsumptionsInModal && !hasViewedConsumptions)
                   ? "Debe hacer clic en 'Registrar consumo' antes de cerrar la cuenta"
-                  : ""
+                  : "Cerrar la cuenta de la habitación"
               }
             >
-              Cerrar cuenta
+              {isProcessingClose ? "Procesando..." : "Cerrar cuenta"}
             </button>
             <button
               onClick={handleOccupyRoom}
