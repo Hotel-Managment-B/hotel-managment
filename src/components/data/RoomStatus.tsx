@@ -792,6 +792,57 @@ const RoomStatus = () => {
       alert("No hay consumos disponibles para registrar.");
     }
   };
+
+  // Función para eliminar un consumo del modal
+  const handleDeleteConsumption = async (indexToDelete: number) => {
+    try {
+      if (!roomStatusData?.[0]) return;
+
+      // Confirmar con el usuario antes de eliminar
+      if (!confirm("¿Estás seguro de que deseas eliminar este consumo?")) {
+        return;
+      }
+
+      const roomStatusQuery = query(
+        collection(db, "roomStatus"),
+        where("roomNumber", "==", roomNumber)
+      );
+      const querySnapshot = await getDocs(roomStatusQuery);
+
+      if (!querySnapshot.empty) {
+        const roomStatusDoc = querySnapshot.docs[0];
+        const roomStatusRef = doc(db, "roomStatus", roomStatusDoc.id);
+
+        // Obtener los items actuales
+        const updatedItems = [...roomStatusDoc.data().items];
+
+        // Eliminar el item en el índice especificado
+        updatedItems.splice(indexToDelete, 1);
+
+        // Actualizar en Firebase
+        await updateDoc(roomStatusRef, { items: updatedItems });
+
+        // Actualizar el estado local
+        setRoomStatusData([
+          {
+            ...roomStatusData[0],
+            items: updatedItems,
+          },
+        ]);
+
+        // Si no hay más items, actualizar el estado del modal
+        if (updatedItems.length === 0) {
+          setHasConsumptionsInModal(false);
+        }
+
+        console.log("Consumo eliminado exitosamente");
+      }
+    } catch (error) {
+      console.error("Error al eliminar el consumo:", error);
+      alert("Error al eliminar el consumo: " + error);
+    }
+  };
+
   const handleAddConsumptionToRoomStatus = async () => {
     try {
       const roomStatusQuery = query(
@@ -1780,6 +1831,7 @@ const RoomStatus = () => {
                     Valor Unitario
                   </th>
                   <th className="border border-gray-300 px-4 py-2">Subtotal</th>
+                  <th className="border border-gray-300 px-4 py-2">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -1809,6 +1861,15 @@ const RoomStatus = () => {
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
                         {formatCurrency(item.subtotal || 0)}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <button
+                          onClick={() => handleDeleteConsumption(index)}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors text-xs"
+                          title="Eliminar este consumo"
+                        >
+                          Eliminar
+                        </button>
                       </td>
                     </tr>
                   )
