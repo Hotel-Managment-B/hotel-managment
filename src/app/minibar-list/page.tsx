@@ -8,35 +8,37 @@ const MiniBarListPage = () => {
   const [selectedOption, setSelectedOption] = useState("mini-bar");
 
   return (
-    <div className="mt-12 px-4">
-      {/* Radio buttons para seleccionar la vista */}
-      <div className="flex gap-4 ">
-        <label className="flex items-center gap-1 text-blue-800 font-medium">
-          <input
-            type="radio"
-            value="mini-bar"
-            checked={selectedOption === "mini-bar"}
-            onChange={() => setSelectedOption("mini-bar")}
-          />
-          Historial Compras de Mini Bar
-        </label>
-        <label className="flex items-center gap-1 text-blue-800 font-medium">
-          <input
-            type="radio"
-            value="toiletries"
-            checked={selectedOption === "toiletries"}
-            onChange={() => setSelectedOption("toiletries")}
-          />
-          Historial Compras Productos de Aseo
-        </label>
-      </div>
+    <div className="min-h-screen bg-blue-50">
+      <div className="pt-12 px-4">
+        {/* Radio buttons para seleccionar la vista */}
+        <div className="flex gap-4 max-w-7xl mx-auto pb-4">
+          <label className="flex items-center gap-1 text-blue-800 font-medium">
+            <input
+              type="radio"
+              value="mini-bar"
+              checked={selectedOption === "mini-bar"}
+              onChange={() => setSelectedOption("mini-bar")}
+            />
+            Historial Compras de Mini Bar
+          </label>
+          <label className="flex items-center gap-1 text-blue-800 font-medium">
+            <input
+              type="radio"
+              value="toiletries"
+              checked={selectedOption === "toiletries"}
+              onChange={() => setSelectedOption("toiletries")}
+            />
+            Historial Compras Productos de Aseo
+          </label>
+        </div>
 
-      {/* Mostrar componente según la opción seleccionada */}
-      {selectedOption === "mini-bar" ? (
-        <MiniBarList />
-      ) : (
-        <ToiletriesPurchaseList />
-      )}
+        {/* Mostrar componente según la opción seleccionada */}
+        {selectedOption === "mini-bar" ? (
+          <MiniBarList />
+        ) : (
+          <ToiletriesPurchaseList />
+        )}
+      </div>
     </div>
   );
 };
