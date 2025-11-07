@@ -6,6 +6,7 @@ import { app } from '../../firebase/Index';
 import { getFirestore } from 'firebase/firestore';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import { useRouter } from 'next/navigation';
+import AddPurchase from './AddPurchase';
 
 interface MiniBarPurchase {
   id: string;
@@ -50,51 +51,68 @@ const MiniBarList = () => {
     setIsModalOpen(true);
   };
 
-  return (
-    <div className="p-4 bg-blue-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-center items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-800 text-center">
-            Historial de Compras del Mini Bar
-          </h2>
-        </div>
+  const handlePurchaseSaved = () => {
+    const fetchPurchases = async () => {
+      const db = getFirestore(app);
+      const querySnapshot = await getDocs(collection(db, 'miniBarPurchases'));
+      const purchasesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        date: doc.data().date,
+        paymentMethod: doc.data().paymentMethod,
+        total: doc.data().total,
+      }));
+      setPurchases(purchasesData);
+    };
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-blue-300">
-              <thead className="bg-blue-100">
-                <tr>
-                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Fecha</th>
-                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Método de Pago</th>
-                  <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Total</th>
-                  <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Detalles</th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchases.map((purchase) => (
-                  <tr key={purchase.id} className="hover:bg-blue-50 transition-colors">
-                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
-                      {new Date(purchase.date?.seconds * 1000).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      })}
-                    </td>
-                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{purchase.paymentMethod}</td>
-                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{formatCurrency(purchase.total)}</td>
-                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
-                      <button
-                        onClick={() => fetchDetails(purchase.id)}
-                        className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                      >
-                        Detalle
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    fetchPurchases();
+  };
+
+  return (
+    <div className="p-4 bg-white rounded-lg shadow-lg">
+      <div className="flex flex-col sm:flex-row gap-6">
+        <div className="w-full sm:w-1/2">
+          <AddPurchase />
+        </div>
+        <div className="w-full sm:w-2/3 overflow-x-auto">
+          <div className="flex justify-center items-center">
+            <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
+              Historial de Compras del Mini Bar
+            </h2>
           </div>
+
+          <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
+            <thead className="bg-blue-100">
+              <tr>
+                <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Fecha</th>
+                <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Método de Pago</th>
+                <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Total</th>
+                <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Detalles</th>
+              </tr>
+            </thead>
+            <tbody>
+              {purchases.map((purchase) => (
+                <tr key={purchase.id} className="hover:bg-blue-50 transition-colors">
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
+                    {new Date(purchase.date?.seconds * 1000).toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    })}
+                  </td>
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{purchase.paymentMethod}</td>
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{formatCurrency(purchase.total)}</td>
+                  <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
+                    <button
+                      onClick={() => fetchDetails(purchase.id)}
+                      className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    >
+                      Detalle
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
