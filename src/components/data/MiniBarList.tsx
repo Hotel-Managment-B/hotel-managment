@@ -19,6 +19,7 @@ const MiniBarList = () => {
   const [purchases, setPurchases] = useState<MiniBarPurchase[]>([]);
   const [selectedDetails, setSelectedDetails] = useState<{ description: string; quantity: number; subtotal: string; unitPrice: string }[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -65,19 +66,23 @@ const MiniBarList = () => {
     };
 
     fetchPurchases();
+    setIsPurchaseModalOpen(false);
   };
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg">
-      <div className="flex flex-col sm:flex-row gap-6">
-        <div className="w-full sm:w-1/2">
-          <AddPurchase />
-        </div>
-        <div className="w-full sm:w-2/3 overflow-x-auto">
-          <div className="flex justify-center items-center">
-            <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
+      <div className="flex flex-col gap-6">
+        <div className="w-full overflow-x-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-blue-800 text-center flex-1">
               Historial de Compras del Mini Bar
             </h2>
+            <button
+              onClick={() => setIsPurchaseModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-semibold whitespace-nowrap ml-4"
+            >
+              Compras mini bar
+            </button>
           </div>
 
           <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
@@ -116,32 +121,70 @@ const MiniBarList = () => {
         </div>
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-blue-50 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-md shadow-2xl border-2 border-blue-200 w-11/12 sm:w-2/3 max-h-3/4 overflow-y-auto">
-            <h3 className="text-xl font-bold mb-6">Detalles</h3>
-            <div className="grid grid-cols-4 gap-4">
-              <span className="font-bold">Descripción</span>
-              <span className="font-bold">Cantidad</span>
-              <span className="font-bold">Subtotal</span>
-              <span className="font-bold">Precio Unitario</span>
+      {/* Modal para Compras Mini Bar */}
+      {isPurchaseModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl border-2 border-blue-200 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-blue-200 p-4 sm:p-6 flex justify-between items-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-blue-900">Compras Mini Bar</h3>
+              <button
+                onClick={() => setIsPurchaseModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Cerrar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <div className="mt-4">
+            <div className="p-4 sm:p-6">
+              <AddPurchase />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Detalles de Compra */}
+      {/* Modal para Detalles de Compra */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-2xl border-2 border-blue-200 w-11/12 sm:w-2/3 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-blue-900">Detalles de la Compra</h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Cerrar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-4 mb-3 bg-blue-100 p-3 rounded-md">
+              <span className="font-bold text-blue-900 text-sm">Descripción</span>
+              <span className="font-bold text-blue-900 text-sm">Cantidad</span>
+              <span className="font-bold text-blue-900 text-sm">Subtotal</span>
+              <span className="font-bold text-blue-900 text-sm">Precio Unitario</span>
+            </div>
+            <div className="mt-2 divide-y divide-blue-200">
               {selectedDetails?.map((detail, index) => (
-                <div key={index} className="grid grid-cols-4 gap-4 mb-2">
-                  <span>{detail.description}</span>
-                  <span>{detail.quantity}</span>
-                  <span>{detail.subtotal}</span>
-                  <span>{detail.unitPrice}</span>
+                <div key={index} className="grid grid-cols-4 gap-4 py-3 hover:bg-blue-50 transition-colors">
+                  <span className="text-sm text-gray-800">{detail.description}</span>
+                  <span className="text-sm text-gray-800">{detail.quantity}</span>
+                  <span className="text-sm text-gray-800">{formatCurrency(detail.subtotal)}</span>
+                  <span className="text-sm text-gray-800">{formatCurrency(detail.unitPrice)}</span>
                 </div>
               ))}
             </div>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="mt-6 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-            >
-              Cerrar
-            </button>
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

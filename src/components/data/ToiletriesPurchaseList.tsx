@@ -89,7 +89,7 @@ const ToiletriesPurchaseList = () => {
             </h2>
             <button
               onClick={() => setIsPurchaseModalOpen(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold whitespace-nowrap ml-4"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-semibold whitespace-nowrap ml-4"
             >
               Comprar productos de aseo
             </button>
@@ -138,9 +138,9 @@ const ToiletriesPurchaseList = () => {
       {/* Modal para Comprar Productos de Aseo */}
       {isPurchaseModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl border-2 border-green-200 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-green-200 p-4 sm:p-6 flex justify-between items-center">
-              <h3 className="text-xl sm:text-2xl font-bold text-green-900">Comprar Productos de Aseo</h3>
+          <div className="bg-white rounded-lg shadow-2xl border-2 border-blue-200 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-blue-200 p-4 sm:p-6 flex justify-between items-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-blue-900">Comprar Productos de Aseo</h3>
               <button
                 onClick={() => setIsPurchaseModalOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
