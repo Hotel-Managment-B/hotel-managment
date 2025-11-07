@@ -183,113 +183,115 @@ const RegisterProducts: React.FC<RegisterProductsProps> = ({ onProductAdded, onP
 
   return (
     <div className="flex flex-col items-center justify-center bg-blue-50">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-2xl border-2 border-blue-200">
+      <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg shadow-2xl border-2 border-blue-200">
         <h2 className=" text-sm md:text-lg font-bold text-center text-blue-900">{title || "Registrar Producto del Mini Bar"}</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="date" className="block text-sm font-bold text-blue-900">
-              Fecha
-            </label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              value={formData.date || ""}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="code" className="block text-sm font-bold text-blue-900">
-              Código
-            </label>
-            <input
-              type="text"
-              id="code"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa el código"
-              required
-              disabled={!!initialData} // Deshabilitar si hay datos iniciales
-            />
-          </div>
-          <div>
-            <label htmlFor="productName" className="block text-sm font-bold text-blue-900">
-              Nombre del Producto
-            </label>
-            <input
-              type="text"
-              id="productName"
-              name="productName"
-              value={formData.productName}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa el nombre del producto"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="totalValue" className="block text-sm font-bold text-blue-900">
-              Valor Total de la Compra
-            </label>
-            <input
-              type="text"
-              id="totalValue"
-              name="totalValue"
-              value={formData.totalValue}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa el valor total"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="quantity" className="block text-sm font-bold text-blue-900">
-              Cantidad
-            </label>
-            <input
-              type="text"
-              id="quantity"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa la cantidad"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="unitPurchaseValue" className="block text-sm font-bold text-blue-900">
-              Valor Unitario de Compra
-            </label>
-            <input
-              type="text"
-              id="unitPurchaseValue"
-              name="unitPurchaseValue"
-              value={formData.unitPurchaseValue}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Valor unitario de compra"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="unitSaleValue" className="block text-sm font-bold text-blue-900">
-              Valor Unitario de Venta
-            </label>
-            <input
-              type="text"
-              id="unitSaleValue"
-              name="unitSaleValue"
-              value={formData.unitSaleValue}
-              onChange={handleChange}
-              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              placeholder="Ingresa el valor unitario de venta"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="date" className="block text-sm font-bold text-blue-900">
+                Fecha
+              </label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="code" className="block text-sm font-bold text-blue-900">
+                Código
+              </label>
+              <input
+                type="text"
+                id="code"
+                name="code"
+                value={formData.code}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                placeholder="Ingresa el código"
+                required
+                disabled={!!initialData} // Deshabilitar si hay datos iniciales
+              />
+            </div>
+            <div>
+              <label htmlFor="productName" className="block text-sm font-bold text-blue-900">
+                Nombre del Producto
+              </label>
+              <input
+                type="text"
+                id="productName"
+                name="productName"
+                value={formData.productName}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                placeholder="Ingresa el nombre del producto"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="totalValue" className="block text-sm font-bold text-blue-900">
+                Valor Total de la Compra
+              </label>
+              <input
+                type="text"
+                id="totalValue"
+                name="totalValue"
+                value={formData.totalValue}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                placeholder="Ingresa el valor total"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="quantity" className="block text-sm font-bold text-blue-900">
+                Cantidad
+              </label>
+              <input
+                type="text"
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                placeholder="Ingresa la cantidad"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="unitPurchaseValue" className="block text-sm font-bold text-blue-900">
+                Valor Unitario de Compra
+              </label>
+              <input
+                type="text"
+                id="unitPurchaseValue"
+                name="unitPurchaseValue"
+                value={formData.unitPurchaseValue}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                placeholder="Valor unitario de compra"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="unitSaleValue" className="block text-sm font-bold text-blue-900">
+                Valor Unitario de Venta
+              </label>
+              <input
+                type="text"
+                id="unitSaleValue"
+                name="unitSaleValue"
+                value={formData.unitSaleValue}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                placeholder="Ingresa el valor unitario de venta"
+                required
+              />
+            </div>
           </div>
           {errorMessage && (
             <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
