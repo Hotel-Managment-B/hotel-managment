@@ -140,7 +140,7 @@ const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateLi
   const isEditing = !!initialRoomData;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50 py-8">
+    <div className="flex flex-col items-center min-h-screen bg-blue-50 py-8">
       <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 w-full max-w-4xl mx-4">
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
           {isEditing ? "Editar Habitación" : "Registrar Habitación"}
