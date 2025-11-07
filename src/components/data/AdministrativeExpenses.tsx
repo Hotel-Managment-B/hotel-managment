@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { collection, addDoc, serverTimestamp, query, where, updateDoc, doc, increment, getDocs } from 'firebase/firestore';
 import { db } from "../../firebase/Index";
 import { formatCurrency } from '../../utils/FormatCurrency';
+import { toast } from "react-toastify";
 
 const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
   const [expenseType, setExpenseType] = useState(""); // Nuevo estado para tipo de gasto
@@ -64,7 +65,7 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
   };
   const handleRegisterExpense = async () => {
     if (!date || !expenseType || !concept || !value || !bank) {
-      alert('Por favor, complete todos los campos.');
+      toast.error('Por favor, complete todos los campos.');
       return false; // Retornar false si falla la validación
     }
 
@@ -88,14 +89,14 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
       return true; // Retornar true si el registro fue exitoso
     } catch (error) {
       console.error('Error al registrar el gasto:', error);
-      alert('Hubo un error al registrar el gasto.');
+      toast.error('Hubo un error al registrar el gasto.');
       return false; // Retornar false si hubo error
     }
   };
 
   const handleUpdateBankAccount = async () => {
     if (!bank || !value) {
-      alert('Por favor, seleccione un banco y complete el valor.');
+      toast.error('Por favor, seleccione un banco y complete el valor.');
       return false;
     }
 
@@ -117,12 +118,12 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
         console.log(`Descontado ${formatCurrency(numericValue)} de la cuenta ${bank}`);
         return true;
       } else {
-        alert('No se encontró la cuenta bancaria especificada.');
+        toast.error('No se encontró la cuenta bancaria especificada.');
         return false;
       }
     } catch (error) {
       console.error('Error al actualizar la cuenta bancaria:', error);
-      alert('Hubo un error al actualizar la cuenta bancaria.');
+      toast.error('Hubo un error al actualizar la cuenta bancaria.');
       return false;
     }
   };
@@ -241,7 +242,7 @@ const AdministrativeExpenses = () => {  const [date, setDate] = useState("");
                   if (expenseRegistered) {
                     const bankUpdated = await handleUpdateBankAccount();
                     if (bankUpdated) {
-                      alert('Gasto registrado y monto descontado exitosamente.');
+                      toast.success('Gasto registrado y monto descontado exitosamente.');
                       // Resetear los campos después de registrar exitosamente
                       setDate('');
                       setExpenseType('');

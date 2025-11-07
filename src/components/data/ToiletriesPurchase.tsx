@@ -5,6 +5,7 @@ import { collection, getDocs, getFirestore, addDoc, serverTimestamp, doc, update
 import { app } from "../../firebase/Index";
 import { FaTimes } from "react-icons/fa";
 import { formatCurrency } from "../../utils/FormatCurrency";
+import { toast } from "react-toastify";
 
 interface ToiletriesPurchaseProps {
   onPurchaseSaved: () => void;
@@ -69,13 +70,13 @@ const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved
 
   const handleSavePurchase = async () => {
     if (!selectedAccount) {
-      alert('Por favor, seleccione una cuenta.');
+      toast.error('Por favor, seleccione una cuenta.');
       return;
     }
 
     for (const row of rows) {
       if (!row.description || !row.quantity || !row.total) {
-        alert('Por favor, complete todos los campos: producto, cantidad y total.');
+        toast.error('Por favor, complete todos los campos: producto, cantidad y total.');
         return;
       }
     }
@@ -130,11 +131,11 @@ const ToiletriesPurchase: React.FC<ToiletriesPurchaseProps> = ({ onPurchaseSaved
         });
       }
 
-      alert('Compra guardada exitosamente');
+      toast.success('Compra guardada exitosamente');
       onPurchaseSaved(); // Llamar a la función para actualizar la lista
     } catch (error) {
       console.error('Error al guardar la compra:', error);
-      alert('Hubo un error al guardar la compra');
+      toast.error('Hubo un error al guardar la compra');
     }
   };
 

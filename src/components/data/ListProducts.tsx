@@ -5,6 +5,7 @@ import { collection, getDocs, doc, deleteDoc, updateDoc } from "firebase/firesto
 import { db } from "../../firebase/Index";
 import RegisterProducts from "./RegisterProducts";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 interface Product {
   id: string;
@@ -56,10 +57,10 @@ const ListProducts = () => {
       try {
         await deleteDoc(doc(db, "products", id));
         setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
-        alert("Registro eliminado exitosamente.");
+        toast.success("Registro eliminado exitosamente.");
       } catch (error) {
         console.error("Error eliminando el registro: ", error);
-        alert("Ocurrió un error al eliminar el registro.");
+        toast.error("Ocurrió un error al eliminar el registro.");
       }
     }
   };

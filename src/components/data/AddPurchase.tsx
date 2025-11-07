@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
+import { toast } from "react-toastify";
 
 interface Product {
   code: string;
@@ -143,7 +144,7 @@ const AddPurchase = () => {
     try {
       const paymentMethodSelect = document.querySelector("select");
       if (!paymentMethodSelect) {
-        alert("Por favor, seleccione un método de pago.");
+        toast.error("Por favor, seleccione un método de pago.");
         return;
       }
 
@@ -254,14 +255,14 @@ const AddPurchase = () => {
         console.warn(`No se encontró la cuenta bancaria para el método de pago: "${paymentMethod}"`);
       }
 
-      alert("Compra registrada exitosamente y stock actualizado");
+      toast.success("Compra registrada exitosamente y stock actualizado");
       
       // Opcional: Limpiar el formulario después del registro exitoso
       setRows([{ code: "", description: "", quantity: 1, unitPrice: "", subtotal: "" }]);
       
     } catch (error) {
       console.error("Error al registrar la compra: ", error);
-      alert("Hubo un error al registrar la compra");
+      toast.error("Hubo un error al registrar la compra");
     }
   };
 

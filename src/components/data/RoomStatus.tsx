@@ -21,6 +21,7 @@ import {
 import { db } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
 import Invoice from "./Invoice";
+import { toast } from "react-toastify";
 
 interface Product {
   code: string;
@@ -674,16 +675,16 @@ const RoomStatus = () => {
       }
       
       if (validRows.length > 0) {
-        alert("Inventario actualizado exitosamente");
+        toast.success("Inventario actualizado exitosamente");
       }
     } catch (error) {
       console.error("Error al actualizar el inventario: ", error);
-      alert("Hubo un error al actualizar el inventario");
+      toast.error("Hubo un error al actualizar el inventario");
     }
   };
   const handleOccupyRoom = async () => {
     if (status === "ocupado") {
-      alert("La habitación ya está ocupada.");
+      toast.warning("La habitación ya está ocupada.");
       return;
     }
 
@@ -723,7 +724,7 @@ const RoomStatus = () => {
       
       if (!statusUpdated) {
         console.error("No se pudo actualizar el estado de la habitación");
-        alert("Error al actualizar el estado de la habitación");
+        toast.error("Error al actualizar el estado de la habitación");
         return;
       }
 
@@ -759,10 +760,10 @@ const RoomStatus = () => {
       }
 
       // Mostrar un mensaje de éxito
-      alert("Habitación ocupada y estado registrado exitosamente.");
+      toast.success("Habitación ocupada y estado registrado exitosamente.");
     } catch (error) {
       console.error("Error al ocupar la habitación: ", error);
-      alert("Hubo un error al ocupar la habitación.");
+      toast.error("Hubo un error al ocupar la habitación.");
     }
   };
 
@@ -780,14 +781,14 @@ const RoomStatus = () => {
         setRoomStatusData(roomStatus);
         setIsModalOpen(true);
       } else {
-        alert("No se encontraron datos de estado para esta habitación.");
+        toast.warning("No se encontraron datos de estado para esta habitación.");
       }
     } catch (error) {
       console.error(
         "Error al obtener los datos de estado de la habitación: ",
         error
       );
-      alert("Hubo un error al obtener los datos de estado de la habitación.");
+      toast.error("Hubo un error al obtener los datos de estado de la habitación.");
     }
   };
   const handleRegisterConsumption = () => {
@@ -818,7 +819,7 @@ const RoomStatus = () => {
       // Cerrar el modal
       setIsModalOpen(false);
     } else {
-      alert("No hay consumos disponibles para registrar.");
+      toast.warning("No hay consumos disponibles para registrar.");
     }
   };
 
@@ -868,7 +869,7 @@ const RoomStatus = () => {
       }
     } catch (error) {
       console.error("Error al eliminar el consumo:", error);
-      alert("Error al eliminar el consumo: " + error);
+      toast.error("Error al eliminar el consumo: " + error);
     }
   };
 
@@ -957,13 +958,13 @@ const RoomStatus = () => {
           ]);
         }
 
-        alert("Consumos agregados exitosamente.");
+        toast.success("Consumos agregados exitosamente.");
       } else {
-        alert("No se encontró un estado de habitación para agregar consumos.");
+        toast.warning("No se encontró un estado de habitación para agregar consumos.");
       }
     } catch (error) {
       console.error("Error al agregar consumos a roomStatus: ", error);
-      alert("Hubo un error al agregar consumos: " + error);
+      toast.error("Hubo un error al agregar consumos: " + error);
     }
   };
   const handleOpenModal = () => {
@@ -981,7 +982,7 @@ const RoomStatus = () => {
       }
       setIsModalOpen(true);
     } else {
-      alert("No se encontraron datos de estado para esta habitación.");
+      toast.warning("No se encontraron datos de estado para esta habitación.");
     }
   };
   const handleDeleteRoomStatus = async () => {
@@ -1304,7 +1305,7 @@ const RoomStatus = () => {
         await generatePDFAlternative();
       } catch (alternativeError) {
         console.error('Error en método alternativo:', alternativeError);
-        alert('Error al generar el PDF. Los datos se han guardado correctamente.');
+        toast.error('Error al generar el PDF. Los datos se han guardado correctamente.');
       }
     }
   };
@@ -1774,7 +1775,7 @@ const RoomStatus = () => {
 
                   // Validar que se haya seleccionado un método de pago
                   if (!selectedPaymentMethod) {
-                    alert(
+                    toast.error(
                       "Por favor seleccione un método de pago antes de registrar el servicio."
                     );
                     setIsProcessingClose(false);
@@ -1783,7 +1784,7 @@ const RoomStatus = () => {
 
                   // Validar que se hayan registrado los consumos si los hay
                   if (consumptionsRequireRegistration) {
-                    alert(
+                    toast.warning(
                       "Debe hacer clic en 'Registrar consumo' antes de cerrar la cuenta."
                     );
                     setIsProcessingClose(false);
@@ -1819,7 +1820,7 @@ const RoomStatus = () => {
                       
                       if (!statusUpdated) {
                         console.error("No se pudo actualizar el estado de la habitación");
-                        alert("Error al actualizar el estado de la habitación");
+                        toast.error("Error al actualizar el estado de la habitación");
                         setIsProcessingClose(false);
                         return;
                       }
@@ -1842,7 +1843,7 @@ const RoomStatus = () => {
                       setRateErrorMessage("");
 
                       // Mostrar un solo mensaje de éxito
-                      alert(
+                      toast.success(
                         "Cuenta cerrada exitosamente, habitación desocupada"
                       );
                     } finally {
@@ -1852,7 +1853,7 @@ const RoomStatus = () => {
                   }, 100);
                 } catch (error) {
                   console.error("Error al registrar el servicio:", error);
-                  alert("Error al registrar el servicio: " + error);
+                  toast.error("Error al registrar el servicio: " + error);
                   setIsProcessingClose(false);
                 }
               }}

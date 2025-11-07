@@ -5,6 +5,7 @@ import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import RegisterToiletries from "./RegisterToiletries";
 import { FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export interface Toiletry {
   id: string;
@@ -48,10 +49,10 @@ const ListToiletries = () => {
         setToiletries((prevToiletries) =>
           prevToiletries.filter((toiletry) => toiletry.id !== id)
         );
-        alert("Producto eliminado exitosamente.");
+        toast.success("Producto eliminado exitosamente.");
       } catch (error) {
         console.error("Error al eliminar el producto: ", error);
-        alert("Ocurrió un error al eliminar el producto.");
+        toast.error("Ocurrió un error al eliminar el producto.");
       }
     }
   };

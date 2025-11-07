@@ -32,6 +32,7 @@ import React, { useState, useEffect } from "react";
 import { formatCurrency } from "@/utils/FormatCurrency";
 import { collection, getDocs, query, where, Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase/Index";
+import { toast } from "react-toastify";
 
 interface CloseData {
     fecha: string;
@@ -416,7 +417,7 @@ const Close = () => {
 
     const handleIniciarTurno = () => {
         if (bankAccounts.length === 0) {
-            alert('No hay cuentas bancarias disponibles');
+            toast.error('No hay cuentas bancarias disponibles');
             return;
         }
 
@@ -435,7 +436,7 @@ const Close = () => {
 
         setTurnoIniciado(true);
         setFechaInicioTurno(`${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}`);
-        alert('Turno iniciado. Los saldos han sido capturados.');
+        toast.success('Turno iniciado. Los saldos han sido capturados.');
     };
 
     const handleFinalizarTurno = () => {
@@ -466,7 +467,7 @@ const Close = () => {
         localStorage.removeItem('turnoActivo');
         console.log('Turno finalizado y localStorage limpiado');
         
-        alert('Turno finalizado. El sistema está listo para un nuevo turno.');
+        toast.success('Turno finalizado. El sistema está listo para un nuevo turno.');
     };
 
     const handleInputChange = (field: keyof CloseData, value: string | number) => {
@@ -481,12 +482,12 @@ const Close = () => {
 
     const handleSubmit = async () => {
         if (!turnoIniciado) {
-            alert('Debe iniciar un turno antes de procesar el cierre.');
+            toast.error('Debe iniciar un turno antes de procesar el cierre.');
             return;
         }
 
         if (!closeData.empleado) {
-            alert('Debe seleccionar un empleado responsable.');
+            toast.error('Debe seleccionar un empleado responsable.');
             return;
         }
 
@@ -515,14 +516,13 @@ const Close = () => {
             await addDoc(collection(db, 'close'), closeRecord);
             
             console.log('Cierre registrado exitosamente:', closeRecord);
-            alert('Cierre de caja procesado y registrado correctamente en la base de datos.');
+            toast.success('Cierre de caja procesado y registrado correctamente en la base de datos.');
             
             // Finalizar turno automáticamente después del cierre exitoso
             handleFinalizarTurno();
         } catch (error) {
             console.error('Error al registrar el cierre:', error);
-            alert('Hubo un error al procesar el cierre. Inténtelo nuevamente.');
-        } finally {
+            toast.error('Hubo un error al procesar el cierre. Inténtelo nuevamente.');
             setIsProcessing(false);
         }
     };

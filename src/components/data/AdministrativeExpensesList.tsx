@@ -5,6 +5,7 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { toast } from "react-toastify";
 
 interface AdministrativeExpense {
   date: { seconds: number };
@@ -176,7 +177,7 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
     try {
       // Verificar si hay datos para exportar
       if (filteredExpenses.length === 0) {
-        alert("No hay datos para exportar. Por favor, ajuste los filtros.");
+        toast.warning("No hay datos para exportar. Por favor, ajuste los filtros.");
         return;
       }
 
@@ -296,7 +297,7 @@ const AdministrativeExpensesList: React.FC<AdministrativeExpensesListProps> = ({
       }, 1000);
     } catch (error) {
       console.error("Error al exportar a Excel:", error);
-      alert("Error al exportar a Excel. Por favor, intente de nuevo.");
+      toast.error("Error al exportar a Excel. Por favor, intente de nuevo.");
       setIsExporting(false);
     }
   };

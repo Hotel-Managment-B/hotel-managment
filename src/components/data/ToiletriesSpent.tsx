@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase/Index";
 import ToiletriesSpentList from './ToiletriesSpentList';
+import { toast } from "react-toastify";
 
 const ToiletriesSpent = () => {
   const [selectedOption, setSelectedOption] = useState("");
@@ -71,7 +72,7 @@ const ToiletriesSpent = () => {
   const handleRegisterUsage = async () => {
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement | null;
     if (!selectedOption || !quantity || !selectedPiece || !dateInput || !dateInput.value) {
-      alert("Por favor, complete todos los campos requeridos.");
+      toast.error("Por favor, complete todos los campos requeridos.");
       return;
     }
 
@@ -83,7 +84,7 @@ const ToiletriesSpent = () => {
         room: selectedPiece,
         notes: notes || "",
       });
-      alert("Uso registrado exitosamente.");
+      toast.success("Uso registrado exitosamente.");
 
       // Resetear los campos después de registrar
       setSelectedOption("");
@@ -95,14 +96,14 @@ const ToiletriesSpent = () => {
       setRefreshList(!refreshList);
     } catch (error) {
       console.error("Error al registrar el uso:", error);
-      alert("Hubo un error al registrar el uso.");
+      toast.error("Hubo un error al registrar el uso.");
     }
   };
 
   const handleUpdateQuantity = async () => {
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement | null;
     if (!selectedOption || !quantity || !selectedPiece || !dateInput || !dateInput.value) {
-      alert("Por favor, complete todos los campos requeridos.");
+      toast.error("Por favor, complete todos los campos requeridos.");
       return;
     }
 
@@ -123,13 +124,13 @@ const ToiletriesSpent = () => {
           quantity: increment(-quantity),
         });
 
-        alert("Cantidad actualizada exitosamente.");
+        toast.success("Cantidad actualizada exitosamente.");
       } else {
-        alert("No se encontró el artículo especificado en la colección.");
+        toast.warning("No se encontró el artículo especificado en la colección.");
       }
     } catch (error) {
       console.error("Error al actualizar la cantidad:", error);
-      alert("Hubo un error al actualizar la cantidad.");
+      toast.error("Hubo un error al actualizar la cantidad.");
     }
   };
 

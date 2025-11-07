@@ -7,6 +7,7 @@ import { formatCurrency } from '../../utils/FormatCurrency';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { FixedSizeList as List } from 'react-window';
+import { toast } from 'react-toastify';
 
 interface ServiceHistoryItem {
   id: string;
@@ -355,7 +356,7 @@ const ServiceHistory = () => {
     try {
       // Verificar si hay datos para exportar
       if (filteredItems.length === 0) {
-        alert('No hay datos para exportar. Por favor, ajuste los filtros.');
+        toast.warning('No hay datos para exportar. Por favor, ajuste los filtros.');
         return;
       }
 
@@ -547,7 +548,7 @@ const ServiceHistory = () => {
       }, 1000);
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
-      alert('Error al exportar a Excel. Por favor, intente de nuevo.');
+      toast.error('Error al exportar a Excel. Por favor, intente de nuevo.');
       setIsExporting(false);
     }
   };
