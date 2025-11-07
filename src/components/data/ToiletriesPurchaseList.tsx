@@ -79,11 +79,8 @@ const ToiletriesPurchaseList = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg">
-      <div className="flex flex-col sm:flex-row gap-6">
-        <div className="w-full sm:w-1/2">
-          <ToiletriesPurchase onPurchaseSaved={handlePurchaseSaved} />
-        </div>
-        <div className="w-full sm:w-2/3 overflow-x-auto">
+      <div className="flex flex-col gap-6">
+        <div className="w-full overflow-x-auto">
           <div className="flex justify-center items-center">
             <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
               Historial de Compras de Artículos de Aseo
@@ -127,6 +124,9 @@ const ToiletriesPurchaseList = () => {
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="w-full">
+          <ToiletriesPurchase onPurchaseSaved={handlePurchaseSaved} />
         </div>
       </div>      {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
