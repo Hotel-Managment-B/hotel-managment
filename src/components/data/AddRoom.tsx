@@ -141,88 +141,90 @@ const AddRoom: React.FC<AddRoomProps> = ({ roomData: initialRoomData, onUpdateLi
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 w-full max-w-4xl">
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
           {isEditing ? "Editar Habitación" : "Registrar Habitación"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-bold text-blue-800 mb-1">
-              Número de Habitación
-            </label>
-            <input
-              type="text"
-              name="roomNumber"
-              value={roomData.roomNumber}
-              onChange={handleChange}
-              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-blue-800 mb-1">
-              Valor por Hora
-            </label>
-            <input
-              type="text"
-              name="hourlyRate"
-              value={roomData.hourlyRate}
-              onChange={handleChange}
-              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-blue-800 mb-1">
-              Valor por Hora y Media
-            </label>
-            <input
-              type="text"
-              name="oneAndHalfHourRate"
-              value={roomData.oneAndHalfHourRate}
-              onChange={handleChange}
-              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-blue-800 mb-1">
-              Valor por 3 Horas
-            </label>
-            <input
-              type="text"
-              name="threeHourRate"
-              value={roomData.threeHourRate}
-              onChange={handleChange}
-              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-blue-800 mb-1">
-              Valor de Amanecida
-            </label>
-            <input
-              type="text"
-              name="overnightRate"
-              value={roomData.overnightRate}
-              onChange={handleChange}
-              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-blue-800 mb-1">
-              Valor de Hora Adicional
-            </label>
-            <input
-              type="text"
-              name="additionalHourRate"
-              value={roomData.additionalHourRate}
-              onChange={handleChange}
-              className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-blue-800 mb-1">
+                Número de Habitación
+              </label>
+              <input
+                type="text"
+                name="roomNumber"
+                value={roomData.roomNumber}
+                onChange={handleChange}
+                className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-800 mb-1">
+                Valor por Hora
+              </label>
+              <input
+                type="text"
+                name="hourlyRate"
+                value={roomData.hourlyRate}
+                onChange={handleChange}
+                className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-800 mb-1">
+                Valor por Hora y Media
+              </label>
+              <input
+                type="text"
+                name="oneAndHalfHourRate"
+                value={roomData.oneAndHalfHourRate}
+                onChange={handleChange}
+                className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-800 mb-1">
+                Valor por 3 Horas
+              </label>
+              <input
+                type="text"
+                name="threeHourRate"
+                value={roomData.threeHourRate}
+                onChange={handleChange}
+                className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-800 mb-1">
+                Valor de Amanecida
+              </label>
+              <input
+                type="text"
+                name="overnightRate"
+                value={roomData.overnightRate}
+                onChange={handleChange}
+                className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-blue-800 mb-1">
+                Valor de Hora Adicional
+              </label>
+              <input
+                type="text"
+                name="additionalHourRate"
+                value={roomData.additionalHourRate}
+                onChange={handleChange}
+                className="w-full border border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                required
+              />
+            </div>
           </div>
           <div className="flex justify-center">
             <button
