@@ -51,36 +51,51 @@ const MiniBarList = () => {
   };
 
   return (
-    <div className="p-4 m-4 bg-white">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 mt-4">
-        <h2 className="text-xl font-bold text-center text-blue-900 bg-gradient-to-b from-blue-100 to-blue-200 w-full max-w-7xl rounded-lg">Historial de Compras del Mini Bar</h2>
-      </div>      <div className="overflow-x-auto">        <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
-          <thead className="bg-blue-100">
-            <tr>
-              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Fecha</th>
-              <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Método de Pago</th>
-              <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Total</th>
-              <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Detalles</th>
-            </tr>
-          </thead>
-          <tbody>
-            {purchases.map((purchase) => (
-              <tr key={purchase.id} className="hover:bg-blue-50 transition-colors">
-                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{new Date(purchase.date?.seconds * 1000).toLocaleDateString()}</td>
-                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{purchase.paymentMethod}</td>
-                <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{formatCurrency(purchase.total)}</td>
-                <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
-                  <button
-                    onClick={() => fetchDetails(purchase.id)}
-                    className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  >
-                    Detalle
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="p-4 bg-blue-50 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-center items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-800 text-center">
+            Historial de Compras del Mini Bar
+          </h2>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-blue-300">
+              <thead className="bg-blue-100">
+                <tr>
+                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Fecha</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-left text-sm font-semibold text-blue-900">Método de Pago</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-right text-sm font-semibold text-blue-900">Total</th>
+                  <th className="py-3 px-4 border-b border-blue-300 text-center text-sm font-semibold text-blue-900">Detalles</th>
+                </tr>
+              </thead>
+              <tbody>
+                {purchases.map((purchase) => (
+                  <tr key={purchase.id} className="hover:bg-blue-50 transition-colors">
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">
+                      {new Date(purchase.date?.seconds * 1000).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
+                    </td>
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800">{purchase.paymentMethod}</td>
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-gray-800 text-right">{formatCurrency(purchase.total)}</td>
+                    <td className="py-3 px-4 border-b border-blue-200 text-sm text-center">
+                      <button
+                        onClick={() => fetchDetails(purchase.id)}
+                        className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                      >
+                        Detalle
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {isModalOpen && (
