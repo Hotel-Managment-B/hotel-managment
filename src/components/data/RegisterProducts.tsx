@@ -299,12 +299,14 @@ const RegisterProducts: React.FC<RegisterProductsProps> = ({ onProductAdded, onP
           {successMessage && (
             <p className="mt-1 text-sm text-blue-700">{successMessage}</p>
           )}
-          <button
-            type="submit"
-            className="max-w-96 px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            {buttonText || "Registrar Producto"}
-          </button>
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              className="max-w-96 px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              {buttonText || "Registrar Producto"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
