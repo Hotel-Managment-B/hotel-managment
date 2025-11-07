@@ -1724,6 +1724,14 @@ const RoomStatus = () => {
           >
             Agregar Fila
           </button>
+          {isRoomStatusActive && (
+            <button
+              onClick={handleAddConsumptionToRoomStatus}
+              className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 ml-4"
+            >
+              Agregar Consumos
+            </button>
+          )}
         </div>
         <div className="bg-white shadow-2xl border-2 border-blue-200 rounded-lg p-6 h-32 col-span-2 md:col-span-1 mt-6 mr-0 md:mr-4 flex flex-col justify-between">
           {" "}
@@ -1874,12 +1882,6 @@ const RoomStatus = () => {
                   className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-16 lg:mr-12 m-4"
                 >
                   Ver Consumos
-                </button>
-                <button
-                  onClick={handleAddConsumptionToRoomStatus}
-                  className="mt-4 bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 h-12 mr-0 md:mr-16 lg:mr-12 m-4"
-                >
-                  Agregar Consumos
                 </button>
               </>
             )}
