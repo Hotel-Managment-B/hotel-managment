@@ -526,7 +526,7 @@ const RoomStatus = () => {
       return false;
     }
   };
-  const handleRegisterPurchase = async () => {
+  const handleRegisterPurchase = async (checkOutDateTimeParam?: string) => {
     try {
       if (!selectedPaymentMethod) {
         console.warn(
@@ -548,19 +548,22 @@ const RoomStatus = () => {
       const detailsRef = collection(roomHistoryRef, "details");
       const validRows = rows.filter((row) => row.code && row.code.trim() !== "" && row.description && row.description.trim() !== "");
       
+      // Usar el parámetro si se proporciona, sino usar el estado
+      const finalCheckOutTime = checkOutDateTimeParam || checkOutTime;
+      
       // Agregar información de servicio de habitación (hora, tarifa, etc.)
       await addDoc(detailsRef, {
         type: "serviceInfo", // Tipo para identificar este registro
         checkInTime: extractTimeFromISO(checkInTime), // Guardar solo HH:MM
-        checkOutTime: extractTimeFromISO(checkOutTime), // Guardar solo HH:MM
+        checkOutTime: extractTimeFromISO(finalCheckOutTime), // Guardar solo HH:MM
         selectedRate: selectedRate,
         additionalHourCost: additionalHourCost,
         additionalHourQuantity: additionalHourQuantity,
         totalAdditionalHourCost: additionalHourCost * additionalHourQuantity,
         planName: getSelectedPlanName(), // Nombre del plan seleccionado
         totalGeneral: totalAmount, // ✅ Guardar el total general aquí
-        timeInMinutes: calculateTotalMinutes(checkInTime, checkOutTime), // Tiempo transcurrido en minutos
-        timeDisplay: formatTimeDisplay(calculateTotalMinutes(checkInTime, checkOutTime)), // Tiempo transcurrido en formato legible
+        timeInMinutes: calculateTotalMinutes(checkInTime, finalCheckOutTime), // Tiempo transcurrido en minutos
+        timeDisplay: formatTimeDisplay(calculateTotalMinutes(checkInTime, finalCheckOutTime)), // Tiempo transcurrido en formato legible
       });
       
       // Agregar productos consumidos
@@ -1766,8 +1769,8 @@ const RoomStatus = () => {
                   setIsProcessingClose(true);
 
                   // Establecer la hora de salida con la hora actual
-                  const now = new Date();
-                  setCheckOutTime(now.toISOString());
+                  const checkOutDateTime = new Date().toISOString();
+                  setCheckOutTime(checkOutDateTime);
 
                   // Validar que se haya seleccionado un método de pago
                   if (!selectedPaymentMethod) {
@@ -1798,7 +1801,7 @@ const RoomStatus = () => {
                       await generatePDF();
 
                       // Registrar la compra y validar que fue exitoso
-                      const purchaseRegistered = await handleRegisterPurchase();
+                      const purchaseRegistered = await handleRegisterPurchase(checkOutDateTime);
                       if (!purchaseRegistered && purchaseRegistered !== undefined) {
                         console.error("No se pudo registrar la compra");
                         setIsProcessingClose(false);
