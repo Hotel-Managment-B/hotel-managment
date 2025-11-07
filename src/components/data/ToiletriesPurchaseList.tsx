@@ -20,6 +20,7 @@ const ToiletriesPurchaseList = () => {
     { product: string; quantity: number; total: string }[] | null
   >(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPurchases = async () => {
@@ -75,16 +76,23 @@ const ToiletriesPurchaseList = () => {
     };
 
     fetchPurchases();
+    setIsPurchaseModalOpen(false);
   };
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg">
       <div className="flex flex-col gap-6">
         <div className="w-full overflow-x-auto">
-          <div className="flex justify-center items-center">
-            <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-blue-800 text-center flex-1">
               Historial de Compras de Artículos de Aseo
             </h2>
+            <button
+              onClick={() => setIsPurchaseModalOpen(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold whitespace-nowrap ml-4"
+            >
+              Comprar productos de aseo
+            </button>
           </div>
 
           <table className="min-w-full bg-white border border-blue-300 rounded-lg overflow-hidden">
@@ -125,10 +133,33 @@ const ToiletriesPurchaseList = () => {
             </tbody>
           </table>
         </div>
-        <div className="w-full">
-          <ToiletriesPurchase onPurchaseSaved={handlePurchaseSaved} />
+      </div>
+
+      {/* Modal para Comprar Productos de Aseo */}
+      {isPurchaseModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl border-2 border-green-200 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-green-200 p-4 sm:p-6 flex justify-between items-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-green-900">Comprar Productos de Aseo</h3>
+              <button
+                onClick={() => setIsPurchaseModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Cerrar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 sm:p-6">
+              <ToiletriesPurchase onPurchaseSaved={handlePurchaseSaved} />
+            </div>
+          </div>
         </div>
-      </div>      {isModalOpen && (
+      )}
+
+      {/* Modal para Detalles de Compra */}
+      {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-2xl border-2 border-blue-200 w-11/12 sm:w-2/3 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
