@@ -1765,6 +1765,10 @@ const RoomStatus = () => {
                   // Marcar que está procesando
                   setIsProcessingClose(true);
 
+                  // Establecer la hora de salida con la hora actual
+                  const now = new Date();
+                  setCheckOutTime(now.toISOString());
+
                   // Validar que se haya seleccionado un método de pago
                   if (!selectedPaymentMethod) {
                     alert(
