@@ -5,6 +5,7 @@ import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../../firebase/Index";
 import { formatCurrency } from "../../utils/FormatCurrency";
+import { toast } from "react-toastify";
 
 import { Employee } from "./ListEmployee"; // Importé correctamente la interfaz Employee para resolver el error de tipo
 
@@ -100,7 +101,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
         
         // 1. Primero crear la cuenta de autenticación
         if (!formData.email || !formData.password) {
-          alert("Email y contraseña son requeridos para crear la cuenta del empleado");
+          toast.error("Email y contraseña son requeridos para crear la cuenta del empleado");
           return;
         }
 
@@ -144,7 +145,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
         });
         setDisplaySalary("");
         
-        alert("Empleado registrado exitosamente. Se ha creado su cuenta de acceso.");
+        toast.success("Empleado registrado exitosamente. Se ha creado su cuenta de acceso.");
         return;
       }
       
@@ -166,20 +167,20 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({
         });
       }
       
-      alert("Empleado actualizado exitosamente.");
+      toast.success("Empleado actualizado exitosamente.");
       
     } catch (error: any) {
       console.error("Error al registrar o actualizar el empleado:", error);
       
       // Manejar errores específicos de Firebase Auth
       if (error.code === 'auth/email-already-in-use') {
-        alert("Este email ya está registrado. Por favor usa otro email.");
+        toast.error("Este email ya está registrado. Por favor usa otro email.");
       } else if (error.code === 'auth/weak-password') {
-        alert("La contraseña es muy débil. Debe tener al menos 6 caracteres.");
+        toast.error("La contraseña es muy débil. Debe tener al menos 6 caracteres.");
       } else if (error.code === 'auth/invalid-email') {
-        alert("El formato del email no es válido.");
+        toast.error("El formato del email no es válido.");
       } else {
-        alert("Error al registrar el empleado. Por favor intenta nuevamente.");
+        toast.error("Error al registrar el empleado. Por favor intenta nuevamente.");
       }
     }
   };

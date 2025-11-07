@@ -3,6 +3,8 @@ import "./globals.css";
 import TabMenu from "@/components/layout/TabMenu";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { StockAlertProvider } from "@/components/providers/StockAlertProvider";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
   title: "Hotel Managment System",
@@ -21,6 +23,22 @@ export default function RootLayout({
           <StockAlertProvider>
             <TabMenu />
             <div>{children}</div>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+              toastStyle={{
+                borderRadius: "8px",
+                border: "2px solid #3b82f6",
+              }}
+            />
           </StockAlertProvider>
         </AuthProvider>
       </body>
